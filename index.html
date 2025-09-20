@@ -1,0 +1,3988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Floozy Frogger</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-title {
+            color: #FFB6C1;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7), -1px -1px 2px rgba(255,255,255,0.3);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #ffd700;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .game-container {
+            background: #222;
+            border: 4px solid #444;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
+        }
+
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(to bottom, #87CEEB, #6BB6D6);
+            image-rendering: auto;
+            /* Performance optimizations */
+            will-change: transform;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .controls {
+            color: white;
+            margin-top: 15px;
+            text-align: center;
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .score {
+            color: #ffd700;
+            font-size: 1.6em;
+            margin-top: 10px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .game-over {
+            color: white;
+            font-size: 1.8em;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+            background: rgba(0,0,0,0.9);
+            padding: 25px;
+            border-radius: 15px;
+            border: 3px solid #ff6b6b;
+            box-shadow: 0 0 20px rgba(255,107,107,0.5);
+        }
+
+        .game-over p {
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF69B4, #FFB6C1, #FFC0CB);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .intro-content {
+            text-align: center;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 30px rgba(255,215,0,0.5);
+        }
+        
+        .intro-content h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            color: #FFD700;
+        }
+        
+        .intro-content p {
+            font-size: 1.2em;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .start-text {
+            font-size: 1.5em !important;
+            color: #FFD700 !important;
+            font-weight: bold;
+            margin-top: 30px !important;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        .outro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #800080, #4B0082, #000000);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .outro-content {
+            text-align: center;
+            color: white;
+            background: rgba(0,0,0,0.8);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #FF6B6B;
+            box-shadow: 0 0 30px rgba(255,107,107,0.5);
+            max-width: 600px;
+        }
+        
+        .outro-content h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            color: #FF6B6B;
+        }
+        
+        .outro-content p {
+            font-size: 1.3em;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .outro-moral {
+            font-style: italic;
+            color: #FFD700 !important;
+            font-size: 1.1em !important;
+            margin: 25px 0 !important;
+        }
+        
+        .restart-text {
+            font-size: 1.4em !important;
+            color: white !important;
+            font-weight: bold;
+            margin-top: 30px !important;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .power-up-status {
+            color: #FF4500;
+            font-size: 1.2em;
+            text-align: center;
+            margin-top: 5px;
+            display: none;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Mobile Controls */
+        .mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: none;
+            z-index: 2000;
+        }
+        
+        .mobile-restart {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 2001;
+            background: rgba(255, 107, 107, 0.95);
+            border: 3px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 20px 40px;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            user-select: none;
+        }
+        
+        .mobile-restart:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: 60px 60px 60px;
+            grid-template-rows: 60px 60px 60px;
+            gap: 5px;
+        }
+
+        .dpad-button {
+            background: rgba(255, 255, 255, 0.8);
+            border: 3px solid #333;
+            border-radius: 12px;
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.05s ease; /* Faster transition for responsiveness */
+            /* Performance optimizations */
+            will-change: transform, background;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            /* Disable text selection and touch callouts for better mobile performance */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            /* Disable tap highlighting */
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .dpad-button:active {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dpad-up { grid-column: 2; grid-row: 1; }
+        .dpad-left { grid-column: 1; grid-row: 2; }
+        .dpad-right { grid-column: 3; grid-row: 2; }
+        .dpad-down { grid-column: 2; grid-row: 3; }
+
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2000;
+            display: none;
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+        }
+        
+        .fullscreen-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(0,0,0,0.9);
+            border-color: #FFF;
+        }
+        
+        /* Enhanced fullscreen mode styles for mobile */
+        .fullscreen-mode {
+            background: #000 !important;
+            overflow: hidden !important;
+        }
+        
+        .fullscreen-mode .game-title,
+        .fullscreen-mode .subtitle,
+        .fullscreen-mode .controls,
+        .fullscreen-mode .score {
+            display: none !important;
+        }
+        
+        .fullscreen-mode .game-container {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            /* Use dvh for mobile browsers that support it */
+            height: 100dvh !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: #000 !important;
+            z-index: 1000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .fullscreen-mode #gameCanvas {
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            max-height: 100dvh !important;
+        }
+        
+        /* Mobile-specific fullscreen optimizations */
+        html.fullscreen-mode {
+            height: 100% !important;
+            overflow: hidden !important;
+        }
+        
+        html.fullscreen-mode body {
+            height: 100% !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Hide mobile UI elements in fullscreen */
+        .fullscreen-mode .fullscreen-btn {
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            z-index: 2001 !important;
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+        }
+        
+        .fullscreen-mode .mobile-controls {
+            position: fixed !important;
+            bottom: 10px !important;
+            right: 10px !important;
+            z-index: 2001 !important;
+        }
+        
+        .fullscreen-mode .mobile-controls .dpad {
+            grid-template-columns: 35px 35px 35px !important;
+            grid-template-rows: 35px 35px 35px !important;
+            gap: 2px !important;
+        }
+        
+        .fullscreen-mode .mobile-controls .dpad-button {
+            font-size: 14px !important;
+            border-width: 2px !important;
+        }
+
+        @media (max-width: 768px) or (pointer: coarse) {
+            .mobile-controls {
+                display: block;
+            }
+            
+            .mobile-restart.show {
+                display: block;
+            }
+            
+            .fullscreen-btn {
+                display: block;
+            }
+            
+            .controls {
+                font-size: 0.8em;
+                margin-top: 5px;
+                padding: 8px;
+            }
+            
+            body {
+                padding: 5px;
+                margin: 0;
+            }
+            
+            .game-title {
+                font-size: 1.8em;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+            
+            .score {
+                font-size: 1.2em;
+                margin-top: 5px;
+            }
+            
+            /* Make game canvas responsive */
+            #gameCanvas {
+                max-width: 100%;
+                height: auto;
+                width: 100%;
+            }
+            
+            .game-container {
+                width: 100%;
+                max-width: 100vw;
+                margin: 0 auto;
+            }
+        }
+        
+        /* Landscape orientation adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            body {
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
+            
+            .game-title {
+                font-size: 1.2em;
+                margin: 2px 0;
+                line-height: 1;
+            }
+            
+            .subtitle {
+                font-size: 0.7em;
+                margin: 2px 0;
+                line-height: 1;
+            }
+            
+            .controls {
+                font-size: 0.6em;
+                margin: 2px 0;
+                padding: 2px;
+                line-height: 1;
+            }
+            
+            .score {
+                font-size: 0.8em;
+                margin: 2px 0;
+                line-height: 1;
+            }
+            
+            .game-container {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 0;
+            }
+            
+            #gameCanvas {
+                max-height: calc(100vh - 80px) !important;
+                max-width: 100vw !important;
+            }
+            
+            /* Make D-pad smaller and position better for landscape */
+            .mobile-controls {
+                position: fixed;
+                bottom: 5px;
+                right: 5px;
+                z-index: 1000;
+            }
+            
+            .dpad {
+                grid-template-columns: 40px 40px 40px;
+                grid-template-rows: 40px 40px 40px;
+                gap: 2px;
+            }
+            
+            .dpad-button {
+                font-size: 16px;
+                border-radius: 8px;
+            }
+            
+            /* Hide power-up status in landscape to save space */
+            .power-up-status {
+                font-size: 0.7em;
+                padding: 2px 8px;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 1.5em;
+            }
+            
+            .subtitle {
+                font-size: 0.9em;
+            }
+            
+            .controls {
+                font-size: 0.7em;
+            }
+            
+            .dpad {
+                grid-template-columns: 45px 45px 45px;
+                grid-template-rows: 45px 45px 45px;
+                gap: 2px;
+            }
+            
+            .dpad-button {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="game-title">Floozy Frogger</h1>
+    <p class="subtitle">Get to the club before Detravius leaves with some floozy! 💔🍑</p>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
+    
+    <div class="controls">
+        <p><strong>Controls:</strong> W/A/S/D or Arrow Keys • Mobile: Use D-Pad Buttons</p>
+        <p>Collect Hot Cheetos 🌶️ for SPEED BOOST! | Get Nails 💅 for ARMOR!</p>
+    </div>
+    
+    <div class="score" id="score">Score: 0</div>
+    <div class="power-up-status" id="powerUpStatus">🔥 HOT CHEETOS POWER! 🔥</div>
+    <div class="power-up-status" id="nailArmorStatus" style="color: #FF69B4;">💅 NAIL ARMOR ACTIVATED! 💅</div>
+    <div class="game-over" id="gameOver">
+        <p>Oh no, you got hit!</p>
+        <p>Now DeTravius is leaving with some other floozy 💔</p>
+        <p>Press R to try again</p>
+    </div>
+    
+    <div class="intro-screen" id="introScreen">
+        <div class="intro-content">
+            <h1>Welcome to Floozy Frogger!</h1>
+            <p>Help Trina navigate the dangerous Atlanta highways</p>
+            <p>to get to the club before DeTravius leaves with some other floozy!</p>
+            <p class="start-text">Press SPACE to start your journey</p>
+        </div>
+    </div>
+    
+    <div class="outro-screen" id="outroScreen">
+        <div class="outro-content">
+            <h1>Too Late! 💔</h1>
+            <p>While you were stuck in Atlanta traffic...</p>
+            <p>DeTravius packed his bags and left with some other floozy!</p>
+            <p>She had her wig intact, shoes on, and nails done! 💅</p>
+            <p class="outro-moral">Next time, keep your look together on these ATL streets!</p>
+            <p class="restart-text">Press R to try to win him back</p>
+        </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div class="mobile-controls">
+        <div class="dpad">
+            <div class="dpad-button dpad-up" data-direction="up">↑</div>
+            <div class="dpad-button dpad-left" data-direction="left">←</div>
+            <div class="dpad-button dpad-right" data-direction="right">→</div>
+            <div class="dpad-button dpad-down" data-direction="down">↓</div>
+        </div>
+    </div>
+    
+    <!-- Mobile Restart Button -->
+    <div class="mobile-restart" id="mobileRestart">TAP TO RESTART</div>
+    
+    <!-- Fullscreen Button -->
+    <button class="fullscreen-btn" id="fullscreenBtn">⛶ FULLSCREEN</button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const gameOverElement = document.getElementById('gameOver');
+        const powerUpStatus = document.getElementById('powerUpStatus');
+
+        // Game state
+        let gameState = 'intro'; // 'intro', 'playing', 'gameover', 'outro', 'victory'
+        let gameRunning = true; // Keep game running even during intro
+        let score = 0;
+        let level = 1;
+        let playerLives = 3;
+        let hasWig = true;
+        let hasShoes = true;
+        let powerUpActive = false;
+        let powerUpTimer = 0;
+        let nailArmorActive = false;
+        let nailArmorTimer = 0;
+        let currentWigColor = '#FFD700'; // Track wig color for persistent lashes
+        
+        // Title image
+        let titleImage = new Image();
+        titleImage.src = 'title_image.png';
+        let titleImageLoaded = false;
+        titleImage.onload = () => {
+            titleImageLoaded = true;
+        };
+
+        // Track fallen items and enemies
+        let fallenWigs = [];
+        let fallenShoes = [];
+        let constructionCones = [];
+        let powerUps = [];
+        let floozies = []; // Enemy floozies
+        let potholes = [];
+        let bossFloozy = null; // Final boss floozy
+        let bossItems = []; // Items that fall from boss when hit // Track pothole positions for collision
+
+        // Player object - made larger for better visibility
+        const player = {
+            x: 400,
+            y: 550,
+            width: 40,
+            height: 45,
+            baseSpeed: 40,
+            speed: 40,
+            color: '#ff6b6b',
+            direction: 'up',
+            animFrame: 0,
+            animTimer: 0,
+            invulnerable: false,
+            shadowOffset: 4
+        };
+
+        // Cars array
+        const cars = [];
+        const lanes = [
+            { y: 450, speed: 2, direction: 1, color: '#ff4444' },
+            { y: 400, speed: 3, direction: -1, color: '#4444ff' },
+            { y: 350, speed: 2.5, direction: 1, color: '#44ff44' },
+            { y: 300, speed: 3.5, direction: -1, color: '#ffff44' },
+            { y: 250, speed: 2, direction: 1, color: '#ff44ff' },
+            { y: 200, speed: 4, direction: -1, color: '#44ffff' },
+            { y: 150, speed: 2.5, direction: 1, color: '#ffa500' }
+        ];
+
+        // Get wig color based on level
+        function getWigColor() {
+            const colors = ['#FFD700', '#00FF00', '#FF1493', '#9400D3', '#FF4500', '#00FFFF', '#FFFF00'];
+            // Safeguard against invalid levels
+            const safeLevel = Math.min(Math.max(level, 1), 11);
+            const color = colors[(safeLevel - 1) % colors.length];
+            currentWigColor = color; // Update current wig color for persistent lashes
+            return color;
+        }
+
+        // Power-up constructor
+        function PowerUp(type, x, y) {
+            this.type = type;
+            this.x = x;
+            this.y = y;
+            this.width = 25;
+            this.height = 20;
+            this.collected = false;
+            this.rotation = 0;
+            this.bobOffset = 0;
+        }
+
+        const nailArmorStatus = document.getElementById('nailArmorStatus');
+
+        // Spawn power-ups
+        function spawnPowerUp() {
+            if (Math.random() < 0.008 && powerUps.length < 3) {
+                const lane = lanes[Math.floor(Math.random() * lanes.length)];
+                const powerUpType = Math.random() < 0.5 ? 'hotcheetos' : 'nails';
+                powerUps.push(new PowerUp(powerUpType, 
+                    100 + Math.random() * 600,
+                    lane.y
+                ));
+            }
+        }
+
+        // Update power-ups
+        function updatePowerUps() {
+            powerUps.forEach(powerUp => {
+                powerUp.rotation += 0.05;
+                powerUp.bobOffset = Math.sin(Date.now() * 0.003) * 3;
+            });
+
+            // Check collection
+            for (let i = powerUps.length - 1; i >= 0; i--) {
+                const powerUp = powerUps[i];
+                if (player.x < powerUp.x + powerUp.width &&
+                    player.x + player.width > powerUp.x &&
+                    player.y < powerUp.y + powerUp.height &&
+                    player.y + player.height > powerUp.y) {
+                    
+                    // Collect power-up
+                    if (powerUp.type === 'hotcheetos') {
+                        powerUpActive = true;
+                        powerUpTimer = 600; // 10 seconds at 60fps
+                        player.speed = player.baseSpeed * 1.5;
+                        powerUpStatus.style.display = 'block';
+                        score += 50;
+                    } else if (powerUp.type === 'nails') {
+                        nailArmorActive = true;
+                        nailArmorTimer = 600; // 10 seconds at 60fps
+                        nailArmorStatus.style.display = 'block';
+                        score += 75;
+                    }
+                    
+                    powerUps.splice(i, 1);
+                }
+            }
+
+            // Update power-up timers
+            if (powerUpActive) {
+                powerUpTimer--;
+                if (powerUpTimer <= 0) {
+                    powerUpActive = false;
+                    player.speed = player.baseSpeed;
+                    powerUpStatus.style.display = 'none';
+                }
+            }
+            
+            if (nailArmorActive) {
+                nailArmorTimer--;
+                if (nailArmorTimer <= 0) {
+                    nailArmorActive = false;
+                    nailArmorStatus.style.display = 'none';
+                }
+            }
+        }
+
+        // Draw power-ups with PS1-style graphics
+        function drawPowerUps() {
+            powerUps.forEach(powerUp => {
+                const px = powerUp.x;
+                const py = powerUp.y + powerUp.bobOffset;
+                
+                ctx.save();
+                ctx.translate(px + powerUp.width/2, py + powerUp.height/2);
+                ctx.rotate(powerUp.rotation);
+                
+                if (powerUp.type === 'hotcheetos') {
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx.fillRect(-10, 8, 20, 4);
+                    
+                    // Cheetos bag - main body
+                    const gradient = ctx.createLinearGradient(-10, -10, 10, 10);
+                    gradient.addColorStop(0, '#FF4500');
+                    gradient.addColorStop(0.5, '#FF6347');
+                    gradient.addColorStop(1, '#DC143C');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(-10, -10, 20, 15);
+                    
+                    // Bag highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fillRect(-10, -10, 5, 15);
+                    
+                    // Bag text area
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(-8, -3, 16, 8);
+                    
+                    // "HOT" text
+                    ctx.fillStyle = '#FF0000';
+                    ctx.font = 'bold 6px Arial';
+                    ctx.fillText('HOT', -7, 2);
+                    
+                    // Flame effect
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(-6, -9, 2, 3);
+                    ctx.fillRect(4, -9, 2, 3);
+                    
+                    // Sparkle effect
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.fillRect(-8, -8, 2, 2);
+                    
+                } else if (powerUp.type === 'nails') {
+                    // Shadow for nail
+                    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                    ctx.fillRect(-4, 8, 8, 2);
+                    
+                    // Main nail shape - classic coffin/stiletto style
+                    const nailGradient = ctx.createLinearGradient(0, -10, 0, 6);
+                    nailGradient.addColorStop(0, '#FF69B4'); // Hot pink
+                    nailGradient.addColorStop(0.5, '#FF1493'); // Deep pink
+                    nailGradient.addColorStop(1, '#C71585'); // Dark pink at base
+                    ctx.fillStyle = nailGradient;
+                    
+                    // Draw nail shape - coffin style
+                    ctx.beginPath();
+                    ctx.moveTo(-3, 6); // Left base
+                    ctx.lineTo(-4, -2); // Left side narrowing
+                    ctx.lineTo(-2, -8); // Left tip
+                    ctx.lineTo(0, -10); // Top point
+                    ctx.lineTo(2, -8); // Right tip
+                    ctx.lineTo(4, -2); // Right side narrowing
+                    ctx.lineTo(3, 6); // Right base
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Nail shine/highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                    ctx.beginPath();
+                    ctx.moveTo(-1, 4);
+                    ctx.lineTo(-2, -4);
+                    ctx.lineTo(0, -8);
+                    ctx.lineTo(1, -4);
+                    ctx.lineTo(0, 4);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // French tip
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.moveTo(-2, -8);
+                    ctx.lineTo(0, -10);
+                    ctx.lineTo(2, -8);
+                    ctx.lineTo(1, -7);
+                    ctx.lineTo(0, -8);
+                    ctx.lineTo(-1, -7);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Small nail art accent - tiny heart
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(-1, -3, 1, 1);
+                    ctx.fillRect(0, -3, 1, 1);
+                    ctx.fillRect(-1, -2, 1, 1);
+                    ctx.fillRect(1, -2, 1, 1);
+                    ctx.fillRect(0, -1, 1, 1);
+                    
+                    // Sparkles around nail
+                    ctx.fillStyle = 'rgba(255,105,180,0.9)';
+                    ctx.fillRect(-6, -4, 1, 1);
+                    ctx.fillRect(5, -2, 1, 1);
+                    ctx.fillRect(-2, 8, 1, 1);
+                    ctx.fillRect(3, -8, 1, 1);
+                    
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                    ctx.fillRect(-5, 0, 1, 1);
+                    ctx.fillRect(4, 2, 1, 1);
+                }
+                
+                ctx.restore();
+            });
+        }
+
+        // Car constructor
+        function Car(lane) {
+            this.width = 70;
+            this.height = 35;
+            this.lane = lane;
+            this.y = lane.y;
+            this.speed = lane.speed;
+            this.direction = lane.direction;
+            this.color = lane.color;
+            
+            // Include exotic cars with lower spawn rates
+            const carTypes = ['sedan', 'suv', 'shelby', 'cadillac', 'cybertruck'];
+            const weights = [0.4, 0.4, 0.08, 0.08, 0.04]; // Exotic cars are rarer
+            const rand = Math.random();
+            let cumulative = 0;
+            for (let i = 0; i < weights.length; i++) {
+                cumulative += weights[i];
+                if (rand <= cumulative) {
+                    this.type = carTypes[i];
+                    break;
+                }
+            }
+            
+            // Adjust size for specific car types
+            if (this.type === 'shelby') {
+                this.width = 75;
+                this.height = 30;
+                this.color = '#0066CC'; // Classic Shelby blue
+            } else if (this.type === 'cadillac') {
+                this.width = 85;
+                this.height = 40;
+                this.color = '#800080'; // Purple
+            } else if (this.type === 'cybertruck') {
+                this.width = 80;
+                this.height = 38;
+                this.color = '#C0C0C0'; // Silver/steel
+            }
+            
+            if (this.direction === 1) {
+                this.x = -this.width;
+            } else {
+                this.x = canvas.width;
+            }
+        }
+
+        // Draw fallen wigs with better detail
+        function drawWigs() {
+            fallenWigs.forEach(wig => {
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(wig.x - 2, wig.y + 12, 14, 3);
+                
+                // Wig base
+                const gradient = ctx.createLinearGradient(wig.x, wig.y, wig.x, wig.y + 12);
+                gradient.addColorStop(0, wig.color);
+                gradient.addColorStop(1, shadeColor(wig.color, -30));
+                ctx.fillStyle = gradient;
+                
+                // Main hair
+                ctx.fillRect(wig.x, wig.y, 10, 4);
+                ctx.fillRect(wig.x - 2, wig.y + 2, 14, 10);
+                
+                // Braids with texture
+                ctx.fillRect(wig.x - 2, wig.y + 3, 3, 9);
+                ctx.fillRect(wig.x + 9, wig.y + 3, 3, 9);
+                
+                // Highlights
+                ctx.fillStyle = addAlpha(wig.color, 0.3);
+                ctx.fillRect(wig.x + 1, wig.y + 1, 3, 2);
+                ctx.fillRect(wig.x - 1, wig.y + 4, 2, 3);
+            });
+        }
+
+        // Draw fallen shoes with shading
+        function drawFallenShoes() {
+            fallenShoes.forEach(shoe => {
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(shoe.x - 2, shoe.y + 8, 20, 3);
+                
+                // Shoe body with gradient
+                const gradient = ctx.createLinearGradient(shoe.x, shoe.y, shoe.x, shoe.y + 8);
+                gradient.addColorStop(0, '#DEB887');
+                gradient.addColorStop(1, '#CD853F');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(shoe.x, shoe.y, 15, 8);
+                
+                // Heel
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(shoe.x + 15, shoe.y + 3, 5, 5);
+                
+                // Highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(shoe.x + 1, shoe.y + 1, 4, 2);
+                
+                // Strap detail
+                ctx.fillStyle = '#A0522D';
+                ctx.fillRect(shoe.x + 3, shoe.y + 2, 8, 1);
+            });
+        }
+
+        // Check if player can move to new position
+        function canMoveTo(newX, newY) {
+            for (const cone of constructionCones) {
+                // Check if player overlaps with cone's trapezoid shape
+                if (isPlayerInCone(newX, newY, player.width, player.height, cone)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Check if player overlaps with cone's actual trapezoid shape
+        function isPlayerInCone(playerX, playerY, playerWidth, playerHeight, cone) {
+            // Cone dimensions (matching drawEnhancedCone)
+            const coneX = cone.x;
+            const coneY = cone.y;
+            const coneTop = coneX + 9; // tip of cone (center point)
+            const coneBase = 18; // width at base
+            const coneHeight = 25; // actual cone height (not including shadow)
+            
+            // Player bounds
+            const playerLeft = playerX;
+            const playerRight = playerX + playerWidth;
+            const playerTop = playerY;
+            const playerBottom = playerY + playerHeight;
+            
+            // Quick check: if player is completely outside cone's Y range
+            if (playerBottom <= coneY || playerTop >= coneY + coneHeight) {
+                return false;
+            }
+            
+            // Check if any part of the player overlaps with the cone trapezoid
+            // Sample multiple points across the player's height
+            const samplePoints = 5;
+            for (let i = 0; i < samplePoints; i++) {
+                const sampleY = playerTop + (i / (samplePoints - 1)) * playerHeight;
+                
+                // Skip if this sample point is outside cone's Y range
+                if (sampleY < coneY || sampleY > coneY + coneHeight) continue;
+                
+                // Calculate cone width at this Y position
+                const heightFromTop = sampleY - coneY;
+                const widthAtHeight = (heightFromTop / coneHeight) * coneBase;
+                const coneLeftAtHeight = coneTop - (widthAtHeight / 2);
+                const coneRightAtHeight = coneTop + (widthAtHeight / 2);
+                
+                // Check if player overlaps horizontally at this height
+                if (playerRight > coneLeftAtHeight && playerLeft < coneRightAtHeight) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        // Check if player is in a pothole (for speed reduction)
+        function isInPothole(x, y) {
+            for (const pothole of potholes) {
+                if (x < pothole.x + pothole.w &&
+                    x + player.width > pothole.x &&
+                    y < pothole.y + pothole.h &&
+                    y + player.height > pothole.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Spawn cars
+        function spawnCar() {
+            if (Math.random() < 0.02 + (level * 0.005)) {
+                const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
+                cars.push(new Car(randomLane));
+            }
+        }
+
+        // Update cars
+        function updateCars() {
+            for (let i = cars.length - 1; i >= 0; i--) {
+                const car = cars[i];
+                car.x += car.speed * car.direction;
+
+                if (car.direction === 1 && car.x > canvas.width + car.width) {
+                    cars.splice(i, 1);
+                } else if (car.direction === -1 && car.x < -car.width) {
+                    cars.splice(i, 1);
+                }
+            }
+        }
+
+        // Floozy enemy constructor
+        function Floozy(x, y) {
+            this.x = x;
+            this.y = y;
+            this.width = 30;
+            this.height = 40;
+            this.speed = 0.5 + (level * 0.1); // Slower base speed, gentler scaling
+            this.wigColor = ['#FFD700', '#FF1493', '#00CED1', '#9370DB'][Math.floor(Math.random() * 4)];
+            this.animFrame = 0;
+            this.animTimer = 0;
+            this.hitByCar = false;
+            this.flashTimer = 0;
+            this.flashDuration = 120; // frames to flash before disappearing
+        }
+        
+        // Boss Floozy constructor for final level
+        function BossFloozy() {
+            this.x = canvas.width / 2 - 25;
+            this.y = 200;
+            this.width = 50;
+            this.height = 60;
+            this.speed = 1.2;
+            this.health = 5; // Needs 5 car hits
+            this.wigColor = '#FF0000'; // Red wig for boss
+            this.animFrame = 0;
+            this.animTimer = 0;
+            this.invulnerable = false;
+            this.invulnerableTimer = 0;
+            this.defeated = false;
+            this.hasCrown = true;
+            this.hasEBTCard = true;
+            this.hasDesignerBag = true;
+            this.hasFakeNails = true;
+        }
+        
+        // Spawn floozies based on level
+        function spawnFloozy() {
+            // Spawn boss on level 11 if not already spawned
+            if (level === 11 && !bossFloozy && floozies.length === 0) {
+                bossFloozy = new BossFloozy();
+                return;
+            }
+            
+            // Only spawn regular floozies from level 5-10
+            if (level >= 5 && level < 11 && Math.random() < 0.003 * (level - 4) && floozies.length < level - 3) {
+                const spawnY = 100 + Math.random() * 400;
+                const spawnX = Math.random() > 0.5 ? -30 : canvas.width + 30;
+                floozies.push(new Floozy(spawnX, spawnY));
+            }
+        }
+        
+        // Update floozies - they chase Trina
+        function updateFloozies() {
+            for (let i = floozies.length - 1; i >= 0; i--) {
+                const floozy = floozies[i];
+                
+                // Check if floozy is hit by a car
+                if (!floozy.hitByCar) {
+                    for (const car of cars) {
+                        const floozyCenterX = floozy.x + floozy.width / 2;
+                        const floozyCenterY = floozy.y + floozy.height / 2;
+                        const carCenterX = car.x + car.width / 2;
+                        const carCenterY = car.y + car.height / 2;
+                        
+                        // Check if floozy and car centers are close enough
+                        if (Math.abs(floozyCenterX - carCenterX) < 30 &&
+                            Math.abs(floozyCenterY - carCenterY) < 20) {
+                            floozy.hitByCar = true;
+                            floozy.flashTimer = 0;
+                            break;
+                        }
+                    }
+                }
+                
+                // If hit by car, flash and prepare to disappear
+                if (floozy.hitByCar) {
+                    floozy.flashTimer++;
+                    // Stop moving when hit
+                    if (floozy.flashTimer >= floozy.flashDuration) {
+                        floozies.splice(i, 1);
+                        continue;
+                    }
+                } else {
+                    // Normal movement - chase Trina
+                    const dx = player.x - floozy.x;
+                    const dy = player.y - floozy.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Normalize and apply speed
+                    if (distance > 0) {
+                        floozy.x += (dx / distance) * floozy.speed;
+                        floozy.y += (dy / distance) * floozy.speed;
+                    }
+                }
+                
+                // Update animation
+                floozy.animTimer++;
+                if (floozy.animTimer > 20) {
+                    floozy.animFrame = (floozy.animFrame + 1) % 2;
+                    floozy.animTimer = 0;
+                }
+                
+                // Remove if off screen (only if not hit by car)
+                if (!floozy.hitByCar && (floozy.x < -50 || floozy.x > canvas.width + 50 || 
+                    floozy.y < -50 || floozy.y > canvas.height + 50)) {
+                    floozies.splice(i, 1);
+                }
+            }
+        }
+        
+        // Update boss floozy
+        function updateBossFloozy() {
+            if (!bossFloozy || bossFloozy.defeated) return;
+            
+            // Update invulnerability timer
+            if (bossFloozy.invulnerable) {
+                bossFloozy.invulnerableTimer--;
+                if (bossFloozy.invulnerableTimer <= 0) {
+                    bossFloozy.invulnerable = false;
+                }
+            }
+            
+            // Check collision with cars
+            if (!bossFloozy.invulnerable) {
+                for (const car of cars) {
+                    const bossCenterX = bossFloozy.x + bossFloozy.width / 2;
+                    const bossCenterY = bossFloozy.y + bossFloozy.height / 2;
+                    const carCenterX = car.x + car.width / 2;
+                    const carCenterY = car.y + car.height / 2;
+                    
+                    if (Math.abs(bossCenterX - carCenterX) < 40 &&
+                        Math.abs(bossCenterY - carCenterY) < 30) {
+                        bossFloozy.health--;
+                        bossFloozy.invulnerable = true;
+                        bossFloozy.invulnerableTimer = 120; // 2 seconds of invulnerability
+                        
+                        // Drop items based on health remaining
+                        if (bossFloozy.health === 4 && bossFloozy.hasCrown) {
+                            bossFloozy.hasCrown = false;
+                            bossItems.push({
+                                type: 'crown',
+                                x: bossFloozy.x + 20,
+                                y: bossFloozy.y,
+                                rotation: 0
+                            });
+                            showHitMessage("Her crown fell off! 👑");
+                        } else if (bossFloozy.health === 3 && bossFloozy.hasEBTCard) {
+                            bossFloozy.hasEBTCard = false;
+                            bossItems.push({
+                                type: 'ebtcard',
+                                x: bossFloozy.x + 10,
+                                y: bossFloozy.y + 30,
+                                rotation: 0
+                            });
+                            showHitMessage("She dropped her EBT card! 💳");
+                        } else if (bossFloozy.health === 2 && bossFloozy.hasDesignerBag) {
+                            bossFloozy.hasDesignerBag = false;
+                            bossItems.push({
+                                type: 'bag',
+                                x: bossFloozy.x + 30,
+                                y: bossFloozy.y + 20,
+                                rotation: 0
+                            });
+                            showHitMessage("Her designer bag flew off! 👜");
+                        } else if (bossFloozy.health === 1 && bossFloozy.hasFakeNails) {
+                            bossFloozy.hasFakeNails = false;
+                            bossItems.push({
+                                type: 'nails',
+                                x: bossFloozy.x + 15,
+                                y: bossFloozy.y + 40,
+                                rotation: 0
+                            });
+                            showHitMessage("Her fake nails popped off! 💅");
+                        } else if (bossFloozy.health <= 0) {
+                            bossFloozy.defeated = true;
+                            score += 1000;
+                            showHitMessage("Queen Floozy defeated! Get to the club!");
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            // Boss movement - more aggressive chasing
+            const dx = player.x - bossFloozy.x;
+            const dy = player.y - bossFloozy.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 5) {
+                bossFloozy.x += (dx / distance) * bossFloozy.speed;
+                bossFloozy.y += (dy / distance) * bossFloozy.speed;
+            }
+            
+            // Update animation
+            bossFloozy.animTimer++;
+            if (bossFloozy.animTimer > 15) {
+                bossFloozy.animFrame = (bossFloozy.animFrame + 1) % 2;
+                bossFloozy.animTimer = 0;
+            }
+        }
+        
+        // Draw floozies
+        function drawFloozies() {
+            floozies.forEach(floozy => {
+                const fx = floozy.x;
+                const fy = floozy.y;
+                
+                // If hit by car, flash by skipping every other frame
+                if (floozy.hitByCar && Math.floor(floozy.flashTimer / 8) % 2 === 0) {
+                    return; // Skip drawing this frame to create flash effect
+                }
+                
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(fx + 2, fy + 38, 26, 3);
+                
+                // Head
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(fx + 10, fy + 2, 8, 10);
+                
+                // Wig - different style than Trina
+                ctx.fillStyle = floozy.wigColor;
+                ctx.fillRect(fx + 8, fy, 12, 4);
+                ctx.fillRect(fx + 7, fy + 1, 14, 12);
+                
+                // Eyes (mean look)
+                ctx.fillStyle = '#000';
+                ctx.fillRect(fx + 12, fy + 5, 2, 2);
+                ctx.fillRect(fx + 16, fy + 5, 2, 2);
+                
+                // Different outfit - tight dress
+                const dressGradient = ctx.createLinearGradient(fx + 8, fy + 12, fx + 20, fy + 25);
+                dressGradient.addColorStop(0, '#FF00FF');
+                dressGradient.addColorStop(1, '#8B008B');
+                ctx.fillStyle = dressGradient;
+                ctx.fillRect(fx + 8, fy + 12, 12, 15);
+                
+                // Arms (reaching for Trina)
+                ctx.fillRect(fx + 5 + floozy.animFrame, fy + 14, 3, 8);
+                ctx.fillRect(fx + 20 - floozy.animFrame, fy + 14, 3, 8);
+                
+                // Legs
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(fx + 10, fy + 27, 3, 8);
+                ctx.fillRect(fx + 15, fy + 27, 3, 8);
+                
+                // High heels (always on)
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(fx + 9, fy + 35, 4, 3);
+                ctx.fillRect(fx + 15, fy + 35, 4, 3);
+                ctx.fillStyle = '#8B0000';
+                ctx.fillRect(fx + 11, fy + 37, 1, 3);
+                ctx.fillRect(fx + 17, fy + 37, 1, 3);
+                
+                // Mean expression
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(fx + 13, fy + 8, 3, 1);
+                
+                // Speech bubble occasionally
+                if (Math.random() < 0.01) {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(fx + 22, fy - 15, 40, 15);
+                    ctx.fillStyle = 'black';
+                    ctx.font = '8px Arial';
+                    ctx.fillText('HE MINE!', fx + 24, fy - 5);
+                }
+            });
+        }
+        
+        // Draw boss items that fell off
+        function drawBossItems() {
+            bossItems.forEach(item => {
+                ctx.save();
+                ctx.translate(item.x + 10, item.y + 10);
+                ctx.rotate(item.rotation);
+                
+                switch(item.type) {
+                    case 'crown':
+                        // Gold crown
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillRect(-15, -8, 30, 10);
+                        // Crown points
+                        ctx.beginPath();
+                        ctx.moveTo(-15, -8);
+                        ctx.lineTo(-10, -15);
+                        ctx.lineTo(-5, -8);
+                        ctx.lineTo(0, -15);
+                        ctx.lineTo(5, -8);
+                        ctx.lineTo(10, -15);
+                        ctx.lineTo(15, -8);
+                        ctx.fill();
+                        // Jewel
+                        ctx.fillStyle = '#FF1493';
+                        ctx.fillRect(-3, -5, 6, 6);
+                        break;
+                        
+                    case 'ebtcard':
+                        // EBT Card
+                        ctx.fillStyle = '#1E90FF';
+                        ctx.fillRect(-12, -8, 24, 16);
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillRect(-10, -2, 8, 3);
+                        ctx.fillStyle = 'white';
+                        ctx.font = '6px Arial';
+                        ctx.fillText('EBT', -8, 4);
+                        break;
+                        
+                    case 'bag':
+                        // Designer bag
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(-10, -5, 20, 15);
+                        // Handle
+                        ctx.strokeStyle = '#8B4513';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(0, -5, 8, Math.PI, 0, false);
+                        ctx.stroke();
+                        // Logo
+                        ctx.fillStyle = '#FFD700';
+                        ctx.font = 'bold 8px Arial';
+                        ctx.fillText('G', -3, 5);
+                        break;
+                        
+                    case 'nails':
+                        // Fake nails
+                        ctx.fillStyle = '#FF69B4';
+                        for (let i = 0; i < 5; i++) {
+                            ctx.fillRect(-10 + i * 4, -5, 3, 10);
+                        }
+                        // Sparkles
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillRect(-8, -3, 2, 2);
+                        ctx.fillRect(0, -2, 2, 2);
+                        ctx.fillRect(6, -3, 2, 2);
+                        break;
+                }
+                
+                ctx.restore();
+                
+                // Slowly rotate items on ground
+                item.rotation += 0.05;
+            });
+        }
+        
+        // Draw boss floozy
+        function drawBossFloozy() {
+            if (!bossFloozy || bossFloozy.defeated) return;
+            
+            const bx = bossFloozy.x;
+            const by = bossFloozy.y;
+            
+            // Flash when invulnerable
+            if (bossFloozy.invulnerable && Math.floor(bossFloozy.invulnerableTimer / 8) % 2 === 0) {
+                return;
+            }
+            
+            // Shadow - larger for boss
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fillRect(bx + 5, by + 55, 40, 5);
+            
+            // Head - larger
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(bx + 16, by + 3, 12, 15);
+            
+            // Boss wig - big red hair
+            ctx.fillStyle = bossFloozy.wigColor;
+            ctx.fillRect(bx + 12, by, 20, 8);
+            ctx.fillRect(bx + 10, by + 2, 24, 18);
+            ctx.fillRect(bx + 8, by + 4, 28, 14);
+            
+            // Crown on top of wig (if still has it)
+            if (bossFloozy.hasCrown) {
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(bx + 10, by - 8, 24, 6);
+                // Crown points
+                ctx.beginPath();
+                ctx.moveTo(bx + 10, by - 8);
+                ctx.lineTo(bx + 14, by - 14);
+                ctx.lineTo(bx + 18, by - 8);
+                ctx.lineTo(bx + 22, by - 14);
+                ctx.lineTo(bx + 26, by - 8);
+                ctx.lineTo(bx + 30, by - 14);
+                ctx.lineTo(bx + 34, by - 8);
+                ctx.fill();
+                // Crown jewel
+                ctx.fillStyle = '#FF1493';
+                ctx.fillRect(bx + 20, by - 6, 4, 4);
+            }
+            
+            // Evil eyes
+            ctx.fillStyle = '#000';
+            ctx.fillRect(bx + 18, by + 8, 3, 3);
+            ctx.fillRect(bx + 23, by + 8, 3, 3);
+            
+            // Body - designer dress
+            const dressGradient = ctx.createLinearGradient(bx + 12, by + 18, bx + 32, by + 35);
+            dressGradient.addColorStop(0, '#FFD700');
+            dressGradient.addColorStop(0.5, '#FF1493');
+            dressGradient.addColorStop(1, '#8B008B');
+            ctx.fillStyle = dressGradient;
+            ctx.fillRect(bx + 12, by + 18, 20, 20);
+            
+            // Arms - reaching menacingly
+            ctx.fillRect(bx + 6 + bossFloozy.animFrame * 2, by + 20, 5, 12);
+            ctx.fillRect(bx + 33 - bossFloozy.animFrame * 2, by + 20, 5, 12);
+            
+            // Designer bag on arm (if still has it)
+            if (bossFloozy.hasDesignerBag) {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(bx + 36, by + 22, 12, 10);
+                // Handle
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(bx + 42, by + 22, 5, Math.PI, 0, false);
+                ctx.stroke();
+                // Logo
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 6px Arial';
+                ctx.fillText('G', bx + 40, by + 28);
+            }
+            
+            // EBT Card in pocket (if still has it)
+            if (bossFloozy.hasEBTCard) {
+                ctx.fillStyle = '#1E90FF';
+                ctx.fillRect(bx + 16, by + 30, 10, 5);
+                ctx.fillStyle = 'white';
+                ctx.font = '4px Arial';
+                ctx.fillText('EBT', bx + 17, by + 34);
+            }
+            
+            // Legs
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(bx + 16, by + 38, 4, 12);
+            ctx.fillRect(bx + 24, by + 38, 4, 12);
+            
+            // Hands with fake nails (if still has them)
+            if (bossFloozy.hasFakeNails) {
+                // Left hand nails
+                ctx.fillStyle = '#FF69B4';
+                ctx.fillRect(bx + 4, by + 32, 8, 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(bx + 5, by + 32, 1, 1);
+                ctx.fillRect(bx + 8, by + 32, 1, 1);
+                
+                // Right hand nails
+                ctx.fillStyle = '#FF69B4';
+                ctx.fillRect(bx + 32, by + 32, 8, 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(bx + 33, by + 32, 1, 1);
+                ctx.fillRect(bx + 36, by + 32, 1, 1);
+            }
+            
+            // Designer heels
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(bx + 14, by + 50, 6, 4);
+            ctx.fillRect(bx + 24, by + 50, 6, 4);
+            ctx.fillStyle = '#8B0000';
+            ctx.fillRect(bx + 17, by + 53, 2, 5);
+            ctx.fillRect(bx + 27, by + 53, 2, 5);
+            
+            // Health bar
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.fillRect(bx - 5, by - 15, 60, 8);
+            ctx.fillStyle = bossFloozy.health > 2 ? '#00FF00' : '#FF0000';
+            ctx.fillRect(bx - 3, by - 13, (bossFloozy.health / 5) * 56, 4);
+            
+            // Boss name
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('QUEEN FLOOZY', bx + 25, by - 20);
+            ctx.textAlign = 'left';
+        }
+        
+        // Check collision with cars and floozies
+        function checkCollision() {
+            if (player.invulnerable || nailArmorActive) return false;
+
+            for (const car of cars) {
+                // Use center-based collision for more precise hits
+                const playerCenterX = player.x + player.width / 2;
+                const playerCenterY = player.y + player.height / 2;
+                const carCenterX = car.x + car.width / 2;
+                const carCenterY = car.y + car.height / 2;
+                
+                // Check if player and car centers are close enough (same "block")
+                const hitboxSize = 25; // Smaller collision area
+                if (Math.abs(playerCenterX - carCenterX) < hitboxSize &&
+                    Math.abs(playerCenterY - carCenterY) < hitboxSize) {
+                    
+                    playerLives--;
+                    
+                    if (playerLives === 2) {
+                        hasWig = false;
+                        const wigColor = getWigColor();
+                        fallenWigs.push({
+                            x: player.x + 5, 
+                            y: player.y + 2, 
+                            color: wigColor
+                        });
+                        showHitMessage("Your wig fell off! 😱");
+                        
+                        player.x += 20;
+                        if (player.x > canvas.width - player.width) {
+                            player.x = canvas.width - player.width;
+                        }
+                        
+                    } else if (playerLives === 1) {
+                        hasShoes = false;
+                        fallenShoes.push({x: player.x + 5, y: player.y + 25});
+                        showHitMessage("Your shoes came off! 👠💔");
+                        
+                        player.x += 20;
+                        if (player.x > canvas.width - player.width) {
+                            player.x = canvas.width - player.width;
+                        }
+                        
+                    } else {
+                        gameOver();
+                        return true;
+                    }
+                    
+                    player.invulnerable = true;
+                    setTimeout(() => {
+                        player.invulnerable = false;
+                    }, 1500);
+                    
+                    return false;
+                }
+            }
+            
+            // Check collision with floozies (same damage as cars)
+            for (const floozy of floozies) {
+                if (player.x < floozy.x + floozy.width &&
+                    player.x + player.width > floozy.x &&
+                    player.y < floozy.y + floozy.height &&
+                    player.y + player.height > floozy.y) {
+                    
+                    playerLives--;
+                    
+                    if (playerLives === 2) {
+                        hasWig = false;
+                        const wigColor = getWigColor();
+                        fallenWigs.push({
+                            x: player.x + 5, 
+                            y: player.y + 2, 
+                            color: wigColor
+                        });
+                        showHitMessage("That floozy snatched your wig! 😱");
+                        
+                        player.x += 30;
+                        if (player.x > canvas.width - player.width) {
+                            player.x = canvas.width - player.width;
+                        }
+                        
+                    } else if (playerLives === 1) {
+                        hasShoes = false;
+                        fallenShoes.push({x: player.x + 5, y: player.y + 25});
+                        showHitMessage("She knocked your shoes off! 👠💔");
+                        
+                        player.x += 30;
+                        if (player.x > canvas.width - player.width) {
+                            player.x = canvas.width - player.width;
+                        }
+                        
+                    } else {
+                        gameOver();
+                        return true;
+                    }
+                    
+                    player.invulnerable = true;
+                    setTimeout(() => {
+                        player.invulnerable = false;
+                    }, 1500);
+                    
+                    return false;
+                }
+            }
+            
+            // Check collision with boss floozy
+            if (bossFloozy && !bossFloozy.defeated) {
+                if (player.x < bossFloozy.x + bossFloozy.width &&
+                    player.x + player.width > bossFloozy.x &&
+                    player.y < bossFloozy.y + bossFloozy.height &&
+                    player.y + player.height > bossFloozy.y) {
+                    
+                    playerLives--;
+                    
+                    if (playerLives === 2) {
+                        hasWig = false;
+                        const wigColor = getWigColor();
+                        fallenWigs.push({
+                            x: player.x + 5, 
+                            y: player.y + 2, 
+                            color: wigColor
+                        });
+                        showHitMessage("Queen Floozy snatched your wig! 👑😱");
+                        
+                        player.x += 40;
+                        if (player.x > canvas.width - player.width) {
+                            player.x = canvas.width - player.width;
+                        }
+                        
+                    } else if (playerLives === 1) {
+                        hasShoes = false;
+                        fallenShoes.push({x: player.x + 5, y: player.y + 25});
+                        showHitMessage("She stomped your heels off! 👠💔");
+                        
+                        player.x += 40;
+                        if (player.x > canvas.width - player.width) {
+                            player.x = canvas.width - player.width;
+                        }
+                        
+                    } else {
+                        gameOver();
+                        return true;
+                    }
+                    
+                    player.invulnerable = true;
+                    setTimeout(() => {
+                        player.invulnerable = false;
+                    }, 1500);
+                    
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // Show hit message
+        function showHitMessage(message) {
+            const existingMsg = document.getElementById('hitMessage');
+            if (existingMsg) {
+                existingMsg.remove();
+            }
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.id = 'hitMessage';
+            msgDiv.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(220, 20, 60, 0.95));
+                color: white;
+                padding: 15px 25px;
+                border-radius: 15px;
+                font-size: 1.1em;
+                font-weight: bold;
+                z-index: 1000;
+                text-align: center;
+                border: 3px solid #ff6b6b;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            `;
+            msgDiv.textContent = message;
+            document.body.appendChild(msgDiv);
+            
+            setTimeout(() => {
+                msgDiv.remove();
+            }, 2000);
+        }
+        
+        // Show pothole effect
+        function showPotholeEffect() {
+            const existingMsg = document.getElementById('potholeMessage');
+            if (existingMsg) {
+                existingMsg.remove();
+            }
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.id = 'potholeMessage';
+            msgDiv.style.cssText = `
+                position: fixed;
+                top: 50px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(100, 100, 100, 0.9);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 10px;
+                font-size: 0.9em;
+                font-weight: bold;
+                z-index: 1000;
+                text-align: center;
+                border: 2px solid #333;
+                pointer-events: none;
+            `;
+            msgDiv.textContent = 'STUCK IN POTHOLE! 🕳️';
+            document.body.appendChild(msgDiv);
+            
+            setTimeout(() => {
+                msgDiv.remove();
+            }, 800);
+        }
+
+        // Check win
+        function checkWin() {
+            if (player.y <= 100) {
+                // Special handling for level 11 (final level)
+                if (level === 11) {
+                    // Can only win on level 11 if boss is defeated
+                    if (bossFloozy && !bossFloozy.defeated) {
+                        // Boss still alive - push player back and show message
+                        player.y = 150;
+                        showHitMessage("You must defeat Queen Floozy first! 👑⚔️");
+                        return;
+                    } else {
+                        // Boss defeated or doesn't exist - VICTORY!
+                        gameState = 'victory';
+                        gameRunning = false;
+                        score += 5000; // Big bonus for winning
+                        updateScore(); // Update score one final time
+                        return;
+                    }
+                }
+                
+                // Normal level progression (levels 1-10)
+                if (level < 11) {
+                    score += 100;
+                    level++;
+                    player.y = 550;
+                    
+                    fallenWigs.length = 0;
+                    fallenShoes.length = 0;
+                    powerUps.length = 0;
+                    floozies.length = 0; // Clear floozies for new level
+                    bossFloozy = null; // Reset boss
+                    bossItems.length = 0; // Clear boss items
+                    
+                    hasWig = true;
+                    hasShoes = true;
+                    playerLives = 3;
+                    powerUpActive = false;
+                    powerUpTimer = 0;
+                    nailArmorActive = false;
+                    nailArmorTimer = 0;
+                    player.speed = player.baseSpeed;
+                    powerUpStatus.style.display = 'none';
+                    nailArmorStatus.style.display = 'none';
+                    currentWigColor = getWigColor(); // Reset lash color for new level
+                    
+                    updateScore();
+                }
+            }
+        }
+
+        // Update score
+        function updateScore() {
+            const livesText = playerLives === 3 ? "💖💖💖" : 
+                             playerLives === 2 ? "💖💖💔" : 
+                             playerLives === 1 ? "💖💔💔" : "💔💔💔";
+            scoreElement.textContent = `Score: ${score} | Level: ${level} | Lives: ${livesText}`;
+        }
+
+        // Draw road with 3D perspective
+        function drawRoad() {
+            // Sky gradient - simulates time progression from afternoon to night
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, 100);
+            const timeProgress = (level - 1) / 10; // 0 to 1 across 11 levels
+            
+            let topColor, bottomColor;
+            if (level <= 3) {
+                // Afternoon (levels 1-3)
+                const factor = (level - 1) / 2;
+                topColor = interpolateColor('#87CEEB', '#FF8C00', factor); // Sky blue to orange
+                bottomColor = interpolateColor('#98D8E8', '#FFB347', factor);
+            } else if (level <= 7) {
+                // Evening/dusk (levels 4-7)
+                const factor = (level - 4) / 3;
+                topColor = interpolateColor('#FF8C00', '#4B0082', factor); // Orange to indigo
+                bottomColor = interpolateColor('#FFB347', '#191970', factor);
+            } else {
+                // Night (levels 8-11)
+                const factor = (level - 8) / 3;
+                topColor = interpolateColor('#4B0082', '#000033', factor); // Indigo to dark blue
+                bottomColor = interpolateColor('#191970', '#000000', factor); // Midnight blue to black
+            }
+            
+            skyGradient.addColorStop(0, topColor);
+            skyGradient.addColorStop(1, bottomColor);
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, 100);
+
+            // Road with perspective
+            const roadGradient = ctx.createLinearGradient(0, 100, 0, 550);
+            roadGradient.addColorStop(0, '#555');
+            roadGradient.addColorStop(1, '#333');
+            ctx.fillStyle = roadGradient;
+            ctx.fillRect(0, 100, canvas.width, 450);
+
+            // Reset construction cones and potholes
+            constructionCones = [];
+            potholes = [];
+
+            // Level-specific features
+            if (level >= 2) {
+                drawConstructionZones();
+            }
+            if (level >= 3) {
+                drawConcreteDividers();
+            }
+            if (level >= 4) {
+                drawPotholes();
+            }
+            if (level >= 5) {
+                drawRoadwork();
+            }
+
+            // Lane dividers with perspective
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([25, 25]);
+            
+            for (let i = 1; i < lanes.length; i++) {
+                const y = lanes[i].y + 15;
+                if (level >= 3 && (i === 2 || i === 5)) continue;
+                
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+
+            // Safe zones with texture
+            const safeGradient = ctx.createLinearGradient(0, 550, 0, 600);
+            safeGradient.addColorStop(0, '#90EE90');
+            safeGradient.addColorStop(1, '#7CFC7C');
+            ctx.fillStyle = safeGradient;
+            ctx.fillRect(0, 550, canvas.width, 50);
+
+            // Top safe zone
+            ctx.fillStyle = safeGradient;
+            ctx.fillRect(0, 0, canvas.width, 100);
+
+            // Highway signs with 3D effect
+            drawHighwaySigns();
+        }
+
+        // Atlanta location data for each level (11 total)
+        const atlantaLocations = [
+            { name: 'CAMP CREEK', highway: 'I-285 SW', landmark: '🏠 STARTING FROM HOME' },
+            { name: 'GREENBRIAR', highway: 'I-285 W', landmark: '🚧 CONSTRUCTION' },
+            { name: 'DOWNTOWN', highway: 'I-75/85', landmark: '🏢 CONCRETE JUNGLE' },
+            { name: 'BUCKHEAD', highway: 'GA-400 N', landmark: '🕳️ POTHOLE ALLEY' },
+            { name: 'MIDTOWN', highway: 'I-75 N', landmark: '👯‍♀️ FLOOZIES APPEAR' },
+            { name: 'LENOX', highway: 'PEACHTREE RD', landmark: '🛍️ SHOPPING CHAOS' },
+            { name: 'PERIMETER', highway: 'I-285 N', landmark: '🌃 DUSK FALLING' },
+            { name: 'DECATUR', highway: 'DEKALB AVE', landmark: '🌙 NIGHT TIME' },
+            { name: 'LITTLE 5', highway: 'MORELAND AVE', landmark: '🌚 DARK STREETS' },
+            { name: 'EDGEWOOD', highway: 'BLVD SE', landmark: '💃 MORE FLOOZIES' },
+            { name: 'MAGIC CITY', highway: 'CLUB DISTRICT', landmark: '👑 BOSS BATTLE!' }
+        ];
+
+        // Draw enhanced highway signs
+        function drawHighwaySigns() {
+            // Safeguard against invalid levels
+            const safeLevel = Math.min(Math.max(level, 1), 11);
+            const location = atlantaLocations[(safeLevel - 1) % atlantaLocations.length];
+            
+            // Left sign with 3D effect
+            ctx.fillStyle = '#003300';
+            ctx.fillRect(52, 22, 200, 60);
+            ctx.fillStyle = '#006400';
+            ctx.fillRect(50, 20, 200, 60);
+            
+            // Sign border
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(50, 20, 200, 60);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(location.highway, 60, 35);
+            ctx.font = '12px Arial';
+            ctx.fillText('TO ' + location.name, 60, 50);
+            ctx.fillText('EXIT 1 MILE', 60, 65);
+
+            // Right sign
+            ctx.fillStyle = '#003300';
+            ctx.fillRect(552, 22, 200, 60);
+            ctx.fillStyle = '#006400';
+            ctx.fillRect(550, 20, 200, 60);
+            
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(550, 20, 200, 60);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(`LEVEL ${level}`, 570, 35);
+            ctx.font = '12px Arial';
+            ctx.fillText(location.name, 570, 50);
+            ctx.fillText(location.landmark, 570, 65);
+            
+            // Draw street lights for night levels (8-11)
+            if (level >= 8) {
+                drawStreetLights();
+            }
+        }
+        
+        // Draw street lights for night levels
+        function drawStreetLights() {
+            const lightPositions = [150, 400, 650];
+            
+            lightPositions.forEach(x => {
+                // Light pole
+                const poleGradient = ctx.createLinearGradient(x - 3, 100, x + 3, 550);
+                poleGradient.addColorStop(0, '#696969');
+                poleGradient.addColorStop(1, '#2F2F2F');
+                ctx.fillStyle = poleGradient;
+                ctx.fillRect(x - 3, 100, 6, 450);
+                
+                // Light fixture
+                ctx.fillStyle = '#2F2F2F';
+                ctx.fillRect(x - 15, 100, 30, 8);
+                
+                // Light bulb (glowing)
+                ctx.fillStyle = '#FFFACD';
+                ctx.beginPath();
+                ctx.arc(x, 108, 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Light glow effect
+                const glowGradient = ctx.createRadialGradient(x, 108, 0, x, 108, 80);
+                glowGradient.addColorStop(0, 'rgba(255, 250, 205, 0.4)');
+                glowGradient.addColorStop(0.5, 'rgba(255, 250, 205, 0.2)');
+                glowGradient.addColorStop(1, 'rgba(255, 250, 205, 0)');
+                ctx.fillStyle = glowGradient;
+                ctx.fillRect(x - 80, 100, 160, 160);
+                
+                // Light cone on road
+                const lightCone = ctx.createRadialGradient(x, 350, 0, x, 350, 120);
+                lightCone.addColorStop(0, 'rgba(255, 250, 205, 0.2)');
+                lightCone.addColorStop(0.7, 'rgba(255, 250, 205, 0.1)');
+                lightCone.addColorStop(1, 'rgba(255, 250, 205, 0)');
+                ctx.fillStyle = lightCone;
+                ctx.beginPath();
+                ctx.moveTo(x - 10, 108);
+                ctx.lineTo(x - 100, 450);
+                ctx.lineTo(x + 100, 450);
+                ctx.lineTo(x + 10, 108);
+                ctx.fill();
+            });
+        }
+
+        function drawConstructionZones() {
+            // Enhanced construction zones with texture
+            const orangeGradient = ctx.createLinearGradient(0, 380, 0, 420);
+            orangeGradient.addColorStop(0, '#FF8C00');
+            orangeGradient.addColorStop(1, '#FF7F50');
+            ctx.fillStyle = orangeGradient;
+            ctx.fillRect(0, 380, canvas.width, 40);
+            ctx.fillRect(0, 480, canvas.width, 40);
+            
+            // Construction cones with 3D look
+            for (let x = 100; x < canvas.width; x += 150) {
+                // Top row cones
+                drawEnhancedCone(x, 390);
+                constructionCones.push({x: x, y: 390, width: 18, height: 28});
+                
+                // Bottom row cones
+                const bottomX = x + 75;
+                if (bottomX < canvas.width) {
+                    drawEnhancedCone(bottomX, 490);
+                    constructionCones.push({x: bottomX, y: 490, width: 18, height: 28});
+                }
+            }
+        }
+
+        // Draw enhanced cone with shading
+        function drawEnhancedCone(x, y) {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(x - 2, y + 25, 22, 5);
+            
+            // Cone gradient
+            const coneGradient = ctx.createLinearGradient(x, y, x + 18, y + 25);
+            coneGradient.addColorStop(0, '#FF6347');
+            coneGradient.addColorStop(1, '#DC143C');
+            ctx.fillStyle = coneGradient;
+            
+            // Cone shape (trapezoid)
+            ctx.beginPath();
+            ctx.moveTo(x + 9, y);
+            ctx.lineTo(x, y + 25);
+            ctx.lineTo(x + 18, y + 25);
+            ctx.closePath();
+            ctx.fill();
+            
+            // White stripes
+            ctx.fillStyle = 'white';
+            ctx.fillRect(x + 3, y + 8, 12, 3);
+            ctx.fillRect(x + 2, y + 18, 14, 3);
+            
+            // Highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fillRect(x + 5, y + 2, 3, 4);
+        }
+
+        function drawConcreteDividers() {
+            // 3D concrete barriers
+            for (let x = 0; x < canvas.width; x += 80) {
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(x + 2, 317, 60, 15);
+                
+                // Main barrier
+                const barrierGradient = ctx.createLinearGradient(x, 315, x, 330);
+                barrierGradient.addColorStop(0, '#D3D3D3');
+                barrierGradient.addColorStop(1, '#A9A9A9');
+                ctx.fillStyle = barrierGradient;
+                ctx.fillRect(x, 315, 60, 15);
+                
+                // Top edge highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fillRect(x, 315, 60, 2);
+            }
+            
+            // Another divider
+            for (let x = 40; x < canvas.width; x += 80) {
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(x + 2, 217, 60, 15);
+                
+                const barrierGradient = ctx.createLinearGradient(x, 215, x, 230);
+                barrierGradient.addColorStop(0, '#D3D3D3');
+                barrierGradient.addColorStop(1, '#A9A9A9');
+                ctx.fillStyle = barrierGradient;
+                ctx.fillRect(x, 215, 60, 15);
+                
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fillRect(x, 215, 60, 2);
+            }
+            
+            // Reflectors
+            ctx.fillStyle = '#FFFF00';
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = '#FFFF00';
+            for (let x = 10; x < canvas.width; x += 20) {
+                ctx.fillRect(x, 320, 4, 6);
+                ctx.fillRect(x, 220, 4, 6);
+            }
+            ctx.shadowBlur = 0;
+        }
+
+        function drawPotholes() {
+            // Enhanced potholes with depth - Atlanta's notorious road damage!
+            // Clear potholes array and repopulate
+            potholes = [
+                {x: 200, y: 160, w: 30, h: 18},
+                {x: 500, y: 280, w: 35, h: 22},
+                {x: 150, y: 420, w: 25, h: 15},
+                {x: 600, y: 360, w: 32, h: 20},
+                {x: 350, y: 220, w: 28, h: 16}, // Extra pothole
+                {x: 450, y: 380, w: 30, h: 20}  // Extra pothole
+            ];
+            
+            // Pothole warning sign
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(30, 130, 100, 30);
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(30, 130, 100, 30);
+            ctx.fillStyle = 'black';
+            ctx.font = 'bold 10px Arial';
+            ctx.fillText('⚠️ POTHOLES', 35, 148);
+            
+            potholes.forEach(hole => {
+                // Cracked asphalt around pothole
+                ctx.fillStyle = '#555';
+                ctx.fillRect(hole.x - 5, hole.y - 5, hole.w + 10, hole.h + 10);
+                
+                // Outer damage with jagged edges
+                ctx.fillStyle = '#333';
+                ctx.fillRect(hole.x - 3, hole.y - 3, hole.w + 6, hole.h + 6);
+                
+                // Inner pothole - very dark
+                ctx.fillStyle = '#111';
+                ctx.fillRect(hole.x, hole.y, hole.w, hole.h);
+                
+                // Deep center - looks like a void
+                ctx.fillStyle = '#000';
+                ctx.fillRect(hole.x + 4, hole.y + 4, hole.w - 8, hole.h - 8);
+                
+                // Water reflection (Atlanta rain!)
+                ctx.fillStyle = 'rgba(135,206,235,0.3)';
+                ctx.fillRect(hole.x + 2, hole.y + 2, hole.w - 4, hole.h - 4);
+                
+                // Debris and broken asphalt
+                ctx.fillStyle = '#666';
+                for (let i = 0; i < 8; i++) {
+                    const dx = (Math.random() - 0.5) * 20;
+                    const dy = (Math.random() - 0.5) * 20;
+                    const size = Math.random() * 4 + 1;
+                    ctx.fillRect(hole.x + hole.w/2 + dx, hole.y + hole.h/2 + dy, size, size);
+                }
+            });
+        }
+
+        function drawRoadwork() {
+            // Enhanced roadwork with animated equipment
+            const signGradient = ctx.createLinearGradient(300, 180, 300, 220);
+            signGradient.addColorStop(0, '#FFD700');
+            signGradient.addColorStop(1, '#FFA500');
+            ctx.fillStyle = signGradient;
+            ctx.fillRect(300, 180, 200, 40);
+            
+            // Sign frame
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(300, 180, 200, 40);
+            
+            // Sign text with shadow
+            ctx.fillStyle = 'black';
+            ctx.font = 'bold 14px Arial';
+            ctx.shadowBlur = 2;
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.fillText('ROAD WORK AHEAD', 320, 198);
+            ctx.font = '12px Arial';
+            ctx.fillText('MERGE LEFT', 340, 212);
+            ctx.shadowBlur = 0;
+            
+            // Construction vehicle with details
+            drawConstructionVehicle(350, 155);
+            
+            // More cones
+            for (let x = 280; x < 520; x += 25) {
+                drawEnhancedCone(x, 225);
+                constructionCones.push({x: x, y: 225, width: 18, height: 25});
+            }
+            
+            constructionCones.push({x: 350, y: 155, width: 50, height: 30});
+        }
+
+        // Draw construction vehicle
+        function drawConstructionVehicle(x, y) {
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(x - 2, y + 25, 54, 8);
+            
+            // Main body
+            const bodyGradient = ctx.createLinearGradient(x, y, x, y + 25);
+            bodyGradient.addColorStop(0, '#FFA500');
+            bodyGradient.addColorStop(1, '#FF8C00');
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(x, y, 50, 25);
+            
+            // Cabin
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(x + 30, y - 5, 20, 15);
+            
+            // Windows
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(x + 32, y - 3, 7, 6);
+            ctx.fillRect(x + 41, y - 3, 7, 6);
+            
+            // Wheels
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(x + 10, y + 25, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 40, y + 25, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Wheel rims
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.arc(x + 10, y + 25, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 40, y + 25, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Warning light (animated)
+            const lightOn = Math.sin(Date.now() * 0.01) > 0;
+            ctx.fillStyle = lightOn ? '#FFD700' : '#B8860B';
+            ctx.beginPath();
+            ctx.arc(x + 25, y - 8, 3, 0, Math.PI * 2);
+            ctx.fill();
+            if (lightOn) {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#FFD700';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // Enhanced player drawing with PS1-style detail
+        function drawPlayer() {
+            const px = player.x;
+            const py = player.y;
+            
+            // Update animation
+            player.animTimer++;
+            if (player.animTimer > 12) {
+                player.animFrame = (player.animFrame + 1) % 3;
+                player.animTimer = 0;
+            }
+            
+            // Player shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(px + 2, py + player.height - 2, player.width - 4, 5);
+            
+            // Flash effect when invulnerable
+            if (player.invulnerable && Math.sin(Date.now() * 0.1) > 0) {
+                ctx.globalAlpha = 0.5;
+            }
+            
+            // Power-up glow effects
+            if (powerUpActive) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#FF4500';
+            }
+            
+            if (nailArmorActive) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#FF69B4';
+                
+                // Armor sparkle effect
+                if (Math.sin(Date.now() * 0.02) > 0.5) {
+                    ctx.fillStyle = 'rgba(255,105,180,0.3)';
+                    ctx.fillRect(px - 5, py - 5, player.width + 10, player.height + 10);
+                }
+            }
+            
+            // Visual effect when in pothole
+            if (isInPothole(px, py)) {
+                // Mud splatter effect around player
+                ctx.fillStyle = 'rgba(101, 67, 33, 0.6)';
+                for (let i = 0; i < 5; i++) {
+                    const splatterX = px + Math.random() * player.width;
+                    const splatterY = py + player.height - 5 + Math.random() * 5;
+                    ctx.fillRect(splatterX, splatterY, 3, 3);
+                }
+                
+                // Slow motion lines
+                ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(px - 5, py + 10 + i * 10);
+                    ctx.lineTo(px - 15, py + 10 + i * 10);
+                    ctx.stroke();
+                }
+            }
+            
+            drawDetailedPlayer(px, py);
+            
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+        }
+
+        // Draw cornrows hairstyle when wig is off
+        function drawCornrows(px, py, direction) {
+            const cornrowColor = '#000000'; // Black cornrows
+            const highlightColor = '#333333'; // Dark gray highlights
+            
+            ctx.fillStyle = cornrowColor;
+            
+            if (direction === 'front') {
+                // Base head coverage for cornrows
+                ctx.fillRect(px + 14, py, 12, 4);
+                
+                // Cornrow lines going back
+                for (let i = 0; i < 6; i++) {
+                    const rowY = py + 1 + i * 2;
+                    const rowX = px + 15 + i;
+                    
+                    // Main cornrow line
+                    ctx.fillStyle = cornrowColor;
+                    ctx.fillRect(rowX, rowY, 10 - i, 1);
+                    
+                    // Highlight on each row
+                    ctx.fillStyle = highlightColor;
+                    ctx.fillRect(rowX, rowY, 1, 1);
+                }
+                
+                // Side cornrows
+                ctx.fillStyle = cornrowColor;
+                ctx.fillRect(px + 12, py + 2, 2, 12);
+                ctx.fillRect(px + 26, py + 2, 2, 12);
+                
+            } else if (direction === 'back') {
+                // Back view - cornrows going down
+                ctx.fillRect(px + 14, py + 2, 12, 3);
+                
+                // Detailed cornrow pattern
+                for (let i = 0; i < 8; i++) {
+                    const rowX = px + 14 + i * 1.5;
+                    
+                    // Vertical cornrow lines
+                    ctx.fillStyle = cornrowColor;
+                    ctx.fillRect(rowX, py + 3, 1, 14);
+                    
+                    // Braiding texture
+                    for (let j = 0; j < 7; j++) {
+                        ctx.fillStyle = j % 2 === 0 ? highlightColor : cornrowColor;
+                        ctx.fillRect(rowX, py + 4 + j * 2, 1, 1);
+                    }
+                }
+                
+            } else if (direction === 'left') {
+                // Side view - cornrows going back
+                ctx.fillRect(px + 12, py + 2, 10, 4);
+                
+                // Side cornrow lines
+                for (let i = 0; i < 5; i++) {
+                    const rowY = py + 3 + i * 2;
+                    
+                    ctx.fillStyle = cornrowColor;
+                    ctx.fillRect(px + 12, rowY, 8, 1);
+                    
+                    // Braid highlights
+                    ctx.fillStyle = highlightColor;
+                    ctx.fillRect(px + 12 + i, rowY, 1, 1);
+                }
+                
+                // Side edge
+                ctx.fillStyle = cornrowColor;
+                ctx.fillRect(px + 10, py + 2, 2, 16);
+                
+            } else if (direction === 'right') {
+                // Side view - cornrows going back
+                ctx.fillRect(px + 18, py + 2, 10, 4);
+                
+                // Side cornrow lines
+                for (let i = 0; i < 5; i++) {
+                    const rowY = py + 3 + i * 2;
+                    
+                    ctx.fillStyle = cornrowColor;
+                    ctx.fillRect(px + 20, rowY, 8, 1);
+                    
+                    // Braid highlights
+                    ctx.fillStyle = highlightColor;
+                    ctx.fillRect(px + 20 + i, rowY, 1, 1);
+                }
+                
+                // Side edge
+                ctx.fillStyle = cornrowColor;
+                ctx.fillRect(px + 28, py + 2, 2, 16);
+            }
+        }
+
+        // Detailed player sprite with enhanced curves
+        function drawDetailedPlayer(px, py) {
+            const walkOffset = player.animFrame === 1 ? 1 : player.animFrame === 2 ? -1 : 0;
+            
+            // Draw different profiles based on direction
+            if (player.direction === 'left') {
+                drawPlayerSideLeft(px, py, walkOffset);
+            } else if (player.direction === 'right') {
+                drawPlayerSideRight(px, py, walkOffset);
+            } else if (player.direction === 'up') {
+                drawPlayerBack(px, py, walkOffset);
+            } else {
+                drawPlayerFront(px, py, walkOffset);
+            }
+        }
+
+        function drawPlayerFront(px, py, walkOffset) {
+            // Head with shading - larger
+            const skinGradient = ctx.createLinearGradient(px + 15, py + 3, px + 25, py + 13);
+            skinGradient.addColorStop(0, '#8B4513');
+            skinGradient.addColorStop(1, '#654321');
+            ctx.fillStyle = skinGradient;
+            ctx.fillRect(px + 15, py + 3, 10, 12);
+            
+            // Eyes - no whites, just pupils
+            ctx.fillStyle = '#8B4513'; // Same as skin tone
+            ctx.fillRect(px + 17, py + 6, 3, 3);
+            ctx.fillRect(px + 21, py + 6, 3, 3);
+            
+            // Pupils
+            ctx.fillStyle = '#000';
+            ctx.fillRect(px + 18, py + 7, 2, 2);
+            ctx.fillRect(px + 22, py + 7, 2, 2);
+            
+            // Eyelashes that match wig color (persistent even without wig) - MUCH MORE VISIBLE
+            const lashColor = currentWigColor;
+            ctx.fillStyle = lashColor;
+            
+            // Main eyelash lines - thicker and more prominent
+            ctx.fillRect(px + 16, py + 4, 5, 2); // Left eye lashes
+            ctx.fillRect(px + 22, py + 4, 5, 2); // Right eye lashes
+            
+            // Individual lash details - longer and more visible
+            ctx.fillRect(px + 15, py + 3, 1, 3); // Far left lash
+            ctx.fillRect(px + 17, py + 3, 1, 4); // Left center lash
+            ctx.fillRect(px + 19, py + 3, 1, 3); // Left inner lash
+            
+            ctx.fillRect(px + 22, py + 3, 1, 3); // Right inner lash  
+            ctx.fillRect(px + 24, py + 3, 1, 4); // Right center lash
+            ctx.fillRect(px + 26, py + 3, 1, 3); // Far right lash
+            
+            // Extra lash definition
+            ctx.fillStyle = shadeColor(lashColor, -30);
+            ctx.fillRect(px + 16, py + 4, 1, 1);
+            ctx.fillRect(px + 18, py + 4, 1, 1);
+            ctx.fillRect(px + 23, py + 4, 1, 1);
+            ctx.fillRect(px + 25, py + 4, 1, 1);
+            
+            // Mouth - bigger
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(px + 19, py + 11, 3, 2);
+            
+            // Hair/Wig or Cornrows
+            if (hasWig) {
+                // Wig styling - larger and more detailed
+                const wigColor = getWigColor();
+                const wigGradient = ctx.createLinearGradient(px + 13, py, px + 27, py + 15);
+                wigGradient.addColorStop(0, wigColor);
+                wigGradient.addColorStop(1, shadeColor(wigColor, -20));
+                ctx.fillStyle = wigGradient;
+                
+                // Hair volume - bigger
+                ctx.fillRect(px + 14, py, 12, 4);
+                ctx.fillRect(px + 12, py + 2, 16, 3);
+                
+                // Braids - thicker
+                ctx.fillRect(px + 10, py + 2, 4, 18);
+                ctx.fillRect(px + 26, py + 2, 4, 18);
+                
+                // Hair texture
+                ctx.fillStyle = addAlpha(wigColor, 0.3);
+                ctx.fillRect(px + 16, py + 1, 4, 2);
+                ctx.fillRect(px + 12, py + 4, 3, 3);
+            } else {
+                // Cornrows when wig is off
+                drawCornrows(px, py, 'front');
+            }
+            
+            // Pink tracksuit with bust definition - larger
+            const topGradient = ctx.createLinearGradient(px + 12, py + 15, px + 28, py + 25);
+            topGradient.addColorStop(0, '#FFB6C1');
+            topGradient.addColorStop(1, '#FF91A4');
+            ctx.fillStyle = topGradient;
+            ctx.fillRect(px + 12, py + 15, 16, 12);
+            
+            // Enhanced bust curve - more pronounced
+            ctx.fillRect(px + 14, py + 17, 5, 6);
+            ctx.fillRect(px + 21, py + 17, 5, 6);
+            
+            // Bust highlights
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillRect(px + 15, py + 18, 2, 3);
+            ctx.fillRect(px + 22, py + 18, 2, 3);
+            
+            // Tracksuit zipper - bigger
+            ctx.fillStyle = '#FF1493';
+            ctx.fillRect(px + 19, py + 16, 3, 9);
+            
+            // Arms - larger
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(px + 8, py + 17 + walkOffset, 4, 8);
+            ctx.fillRect(px + 28, py + 17 - walkOffset, 4, 8);
+            
+            // Hands - bigger
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 8, py + 25 + walkOffset, 4, 4);
+            ctx.fillRect(px + 28, py + 25 - walkOffset, 4, 4);
+            
+            // Pants - larger
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(px + 14, py + 27, 12, 10);
+            
+            // Legs - thicker
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 15, py + 37 + Math.abs(walkOffset), 4, 5);
+            ctx.fillRect(px + 21, py + 37 - Math.abs(walkOffset), 4, 5);
+            
+            // Shoes (if has them) - bigger
+            if (hasShoes) {
+                const shoeGradient = ctx.createLinearGradient(px + 14, py + 42, px + 18, py + 45);
+                shoeGradient.addColorStop(0, '#DEB887');
+                shoeGradient.addColorStop(1, '#CD853F');
+                ctx.fillStyle = shoeGradient;
+                ctx.fillRect(px + 14, py + 42 + Math.abs(walkOffset), 6, 4);
+                ctx.fillRect(px + 21, py + 42 - Math.abs(walkOffset), 6, 4);
+                
+                // Shoe details
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(px + 15, py + 43 + Math.abs(walkOffset), 3, 1);
+                ctx.fillRect(px + 22, py + 43 - Math.abs(walkOffset), 3, 1);
+            }
+            
+            // Jewelry - bigger and more detailed
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(px + 17, py + 15, 6, 2);
+            ctx.fillRect(px + 19, py + 17, 3, 3);
+            ctx.fillRect(px + 20, py + 20, 2, 2);
+            
+            // Chain sparkle
+            if (player.animFrame === 1) {
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.fillRect(px + 20, py + 17, 2, 2);
+            }
+        }
+
+        function drawPlayerBack(px, py, walkOffset) {
+            // Head (back view) - larger
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 15, py + 3, 10, 12);
+            
+            // Hair (if has it) - bigger and more detailed
+            if (hasWig) {
+                const wigColor = getWigColor();
+                const wigGradient = ctx.createLinearGradient(px + 12, py, px + 28, py + 15);
+                wigGradient.addColorStop(0, wigColor);
+                wigGradient.addColorStop(1, shadeColor(wigColor, -20));
+                ctx.fillStyle = wigGradient;
+                
+                // Hair volume
+                ctx.fillRect(px + 12, py + 2, 16, 16);
+                ctx.fillRect(px + 10, py + 2, 4, 18);
+                ctx.fillRect(px + 26, py + 2, 4, 18);
+                
+                // Hair texture details
+                ctx.fillStyle = addAlpha(wigColor, 0.3);
+                for (let i = 0; i < 3; i++) {
+                    ctx.fillRect(px + 13 + i * 4, py + 4 + i * 2, 2, 8);
+                }
+            } else {
+                // Cornrows when wig is off
+                drawCornrows(px, py, 'back');
+            }
+            
+            // Top - larger
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(px + 12, py + 15, 16, 12);
+            
+            // Arms - bigger
+            ctx.fillRect(px + 8, py + 17 + walkOffset, 4, 8);
+            ctx.fillRect(px + 28, py + 17 - walkOffset, 4, 8);
+            
+            // Pants - larger
+            ctx.fillRect(px + 14, py + 27, 12, 10);
+            
+            // Legs - thicker
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 15, py + 37 + Math.abs(walkOffset), 4, 5);
+            ctx.fillRect(px + 21, py + 37 - Math.abs(walkOffset), 4, 5);
+            
+            // Shoes - bigger
+            if (hasShoes) {
+                ctx.fillStyle = '#DEB887';
+                ctx.fillRect(px + 14, py + 42 + Math.abs(walkOffset), 6, 4);
+                ctx.fillRect(px + 21, py + 42 - Math.abs(walkOffset), 6, 4);
+            }
+        }
+
+        function drawPlayerSideLeft(px, py, walkOffset) {
+            // Head (side view) - larger
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 15, py + 3, 10, 12);
+            
+            // Eye (side view) - no whites
+            ctx.fillStyle = '#8B4513'; // Same as skin tone
+            ctx.fillRect(px + 16, py + 6, 2, 2);
+            
+            // Pupil
+            ctx.fillStyle = '#000';
+            ctx.fillRect(px + 16, py + 6, 2, 2);
+            
+            // Eyelash that matches wig color (persistent even without wig) - MORE VISIBLE
+            const lashColor = currentWigColor;
+            ctx.fillStyle = lashColor;
+            
+            // Main eyelash line - thicker
+            ctx.fillRect(px + 14, py + 4, 4, 2);
+            
+            // Individual lashes - longer and more prominent
+            ctx.fillRect(px + 13, py + 3, 1, 3);
+            ctx.fillRect(px + 15, py + 3, 1, 4);
+            ctx.fillRect(px + 17, py + 3, 1, 3);
+            
+            // Lash definition
+            ctx.fillStyle = shadeColor(lashColor, -30);
+            ctx.fillRect(px + 14, py + 4, 1, 1);
+            ctx.fillRect(px + 16, py + 4, 1, 1);
+            
+            // Hair (side view) - bigger
+            if (hasWig) {
+                const wigColor = getWigColor();
+                const wigGradient = ctx.createLinearGradient(px + 12, py, px + 26, py + 15);
+                wigGradient.addColorStop(0, wigColor);
+                wigGradient.addColorStop(1, shadeColor(wigColor, -20));
+                ctx.fillStyle = wigGradient;
+                
+                ctx.fillRect(px + 12, py + 2, 12, 16);
+                ctx.fillRect(px + 10, py + 2, 4, 18);
+            } else {
+                // Cornrows when wig is off
+                drawCornrows(px, py, 'left');
+            }
+            
+            // Top with bust curve (side profile) - larger
+            const topGradient = ctx.createLinearGradient(px + 12, py + 15, px + 28, py + 27);
+            topGradient.addColorStop(0, '#FFB6C1');
+            topGradient.addColorStop(1, '#FF91A4');
+            ctx.fillStyle = topGradient;
+            ctx.fillRect(px + 12, py + 15, 16, 12);
+            
+            // Enhanced bust (side view) - more pronounced
+            ctx.fillRect(px + 26, py + 17, 5, 6);
+            
+            // Bust highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillRect(px + 27, py + 18, 2, 3);
+            
+            // Arms (walking animation) - bigger
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(px + 8, py + 17 + walkOffset, 4, 8);
+            ctx.fillRect(px + 26, py + 18 - walkOffset, 4, 7);
+            
+            // Hand - bigger
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 6, py + 25 + walkOffset, 3, 3);
+            
+            // Pants with curve - larger
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(px + 14, py + 27, 12, 10);
+            
+            // Enhanced butt curve (side view) - more pronounced
+            ctx.fillRect(px + 24, py + 29, 5, 6);
+            
+            // Butt highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.fillRect(px + 25, py + 30, 2, 3);
+            
+            // Legs - thicker
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 14, py + 37 + walkOffset, 3, 5);
+            ctx.fillRect(px + 22, py + 37 - walkOffset, 3, 5);
+            
+            // Shoes - bigger
+            if (hasShoes) {
+                ctx.fillStyle = '#DEB887';
+                ctx.fillRect(px + 13, py + 42 + walkOffset, 5, 3);
+                ctx.fillRect(px + 22, py + 42 - walkOffset, 5, 3);
+            }
+        }
+
+        function drawPlayerSideRight(px, py, walkOffset) {
+            // Head (side view) - larger
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 15, py + 3, 10, 12);
+            
+            // Eye (side view) - no whites
+            ctx.fillStyle = '#8B4513'; // Same as skin tone
+            ctx.fillRect(px + 22, py + 6, 2, 2);
+            
+            // Pupil
+            ctx.fillStyle = '#000';
+            ctx.fillRect(px + 22, py + 6, 2, 2);
+            
+            // Eyelash that matches wig color (persistent even without wig) - MORE VISIBLE
+            const lashColor = currentWigColor;
+            ctx.fillStyle = lashColor;
+            
+            // Main eyelash line - thicker
+            ctx.fillRect(px + 22, py + 4, 4, 2);
+            
+            // Individual lashes - longer and more prominent
+            ctx.fillRect(px + 21, py + 3, 1, 3);
+            ctx.fillRect(px + 23, py + 3, 1, 4);
+            ctx.fillRect(px + 25, py + 3, 1, 3);
+            
+            // Lash definition
+            ctx.fillStyle = shadeColor(lashColor, -30);
+            ctx.fillRect(px + 22, py + 4, 1, 1);
+            ctx.fillRect(px + 24, py + 4, 1, 1);
+            
+            // Hair (side view) - bigger
+            if (hasWig) {
+                const wigColor = getWigColor();
+                const wigGradient = ctx.createLinearGradient(px + 15, py, px + 29, py + 15);
+                wigGradient.addColorStop(0, wigColor);
+                wigGradient.addColorStop(1, shadeColor(wigColor, -20));
+                ctx.fillStyle = wigGradient;
+                
+                ctx.fillRect(px + 16, py + 2, 12, 16);
+                ctx.fillRect(px + 26, py + 2, 4, 18);
+            } else {
+                // Cornrows when wig is off
+                drawCornrows(px, py, 'right');
+            }
+            
+            // Top with bust curve (side profile) - larger
+            const topGradient = ctx.createLinearGradient(px + 12, py + 15, px + 28, py + 27);
+            topGradient.addColorStop(0, '#FFB6C1');
+            topGradient.addColorStop(1, '#FF91A4');
+            ctx.fillStyle = topGradient;
+            ctx.fillRect(px + 12, py + 15, 16, 12);
+            
+            // Enhanced bust (side view) - more pronounced
+            ctx.fillRect(px + 9, py + 17, 5, 6);
+            
+            // Bust highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillRect(px + 11, py + 18, 2, 3);
+            
+            // Arms (walking animation) - bigger
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(px + 28, py + 17 + walkOffset, 4, 8);
+            ctx.fillRect(px + 10, py + 18 - walkOffset, 4, 7);
+            
+            // Hand - bigger
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 31, py + 25 + walkOffset, 3, 3);
+            
+            // Pants with curve - larger
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(px + 14, py + 27, 12, 10);
+            
+            // Enhanced butt curve (side view) - more pronounced
+            ctx.fillRect(px + 11, py + 29, 5, 6);
+            
+            // Butt highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.fillRect(px + 13, py + 30, 2, 3);
+            
+            // Legs - thicker
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(px + 23, py + 37 + walkOffset, 3, 5);
+            ctx.fillRect(px + 15, py + 37 - walkOffset, 3, 5);
+            
+            // Shoes - bigger
+            if (hasShoes) {
+                ctx.fillStyle = '#DEB887';
+                ctx.fillRect(px + 23, py + 42 + walkOffset, 5, 3);
+                ctx.fillRect(px + 14, py + 42 - walkOffset, 5, 3);
+            }
+            
+            // Jewelry (chain visible from side) - bigger
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(px + 18, py + 15, 4, 2);
+            ctx.fillRect(px + 19, py + 17, 2, 3);
+        }
+
+        // Enhanced car drawing with PS1-style graphics
+        function drawCars() {
+            cars.forEach(car => {
+                const cx = car.x;
+                const cy = car.y;
+                
+                // Car shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fillRect(cx - 3, cy + car.height - 3, car.width + 6, 8);
+                
+                if (car.type === 'suv') {
+                    drawSUV(cx, cy, car);
+                } else if (car.type === 'shelby') {
+                    drawShelby(cx, cy, car);
+                } else if (car.type === 'cadillac') {
+                    drawCadillac(cx, cy, car);
+                } else if (car.type === 'cybertruck') {
+                    drawCybertruck(cx, cy, car);
+                } else {
+                    drawSedan(cx, cy, car);
+                }
+            });
+        }
+
+        // Draw sedan
+        function drawSedan(cx, cy, car) {
+            // Car body with gradient
+            const bodyGradient = ctx.createLinearGradient(cx, cy, cx, cy + car.height);
+            bodyGradient.addColorStop(0, car.color);
+            bodyGradient.addColorStop(1, shadeColor(car.color, -30));
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(cx, cy + 5, car.width, car.height - 5);
+            
+            // Car roof
+            ctx.fillRect(cx + 15, cy, car.width - 30, 12);
+            
+            // Hood and trunk slopes
+            ctx.beginPath();
+            ctx.moveTo(cx + 15, cy + 5);
+            ctx.lineTo(cx, cy + 12);
+            ctx.lineTo(cx, cy + 5);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(cx + car.width - 15, cy + 5);
+            ctx.lineTo(cx + car.width, cy + 12);
+            ctx.lineTo(cx + car.width, cy + 5);
+            ctx.fill();
+            
+            // Windows
+            ctx.fillStyle = 'rgba(135,206,235,0.8)';
+            ctx.fillRect(cx + 18, cy + 2, 10, 8);
+            ctx.fillRect(cx + 32, cy + 2, 10, 8);
+            ctx.fillRect(cx + car.width - 28, cy + 2, 10, 8);
+            
+            // Window reflections
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fillRect(cx + 19, cy + 3, 3, 2);
+            ctx.fillRect(cx + 33, cy + 3, 3, 2);
+            
+            // Door handles
+            ctx.fillStyle = '#333';
+            ctx.fillRect(cx + 25, cy + 15, 3, 1);
+            ctx.fillRect(cx + 42, cy + 15, 3, 1);
+            
+            // Wheels with detail
+            drawWheel(cx + 10, cy + car.height - 6);
+            drawWheel(cx + car.width - 16, cy + car.height - 6);
+            
+            // Lights
+            if (car.direction === 1) {
+                // Headlights
+                ctx.fillStyle = '#FFFACD';
+                ctx.beginPath();
+                ctx.arc(cx + car.width - 2, cy + 12, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(cx + car.width - 2, cy + 20, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Light beams
+                ctx.fillStyle = 'rgba(255,250,205,0.2)';
+                ctx.beginPath();
+                ctx.moveTo(cx + car.width, cy + 12);
+                ctx.lineTo(cx + car.width + 20, cy + 8);
+                ctx.lineTo(cx + car.width + 20, cy + 16);
+                ctx.fill();
+            } else {
+                // Taillights
+                ctx.fillStyle = '#DC143C';
+                ctx.fillRect(cx, cy + 10, 3, 3);
+                ctx.fillRect(cx, cy + 19, 3, 3);
+            }
+            
+            // License plate
+            ctx.fillStyle = 'white';
+            ctx.fillRect(cx + car.width/2 - 8, cy + car.height - 10, 16, 6);
+            ctx.fillStyle = 'black';
+            ctx.font = 'bold 9px monospace';
+            ctx.fillText('GA-' + Math.floor(Math.random() * 999), cx + car.width/2 - 7, cy + car.height - 5);
+        }
+
+        // Draw SUV
+        function drawSUV(cx, cy, car) {
+            // SUV body
+            const bodyGradient = ctx.createLinearGradient(cx, cy, cx, cy + car.height);
+            bodyGradient.addColorStop(0, car.color);
+            bodyGradient.addColorStop(1, shadeColor(car.color, -30));
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(cx, cy + 3, car.width, car.height - 3);
+            
+            // Roof
+            ctx.fillRect(cx + 5, cy, car.width - 10, 8);
+            
+            // Windows - larger for SUV
+            ctx.fillStyle = 'rgba(135,206,235,0.8)';
+            ctx.fillRect(cx + 8, cy + 5, 12, 10);
+            ctx.fillRect(cx + 25, cy + 5, 12, 10);
+            ctx.fillRect(cx + 42, cy + 5, 12, 10);
+            
+            // Window tint
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(cx + 8, cy + 5, 12, 10);
+            ctx.fillRect(cx + 25, cy + 5, 12, 10);
+            ctx.fillRect(cx + 42, cy + 5, 12, 10);
+            
+            // Chrome details
+            ctx.fillStyle = '#C0C0C0';
+            ctx.fillRect(cx, cy + 18, car.width, 1);
+            ctx.fillRect(cx + 5, cy + 8, 3, 10);
+            ctx.fillRect(cx + car.width - 8, cy + 8, 3, 10);
+            
+            // Bigger wheels for SUV
+            drawWheel(cx + 8, cy + car.height - 8, 6);
+            drawWheel(cx + car.width - 18, cy + car.height - 8, 6);
+            
+            // Lights
+            if (car.direction === 1) {
+                ctx.fillStyle = '#FFFACD';
+                ctx.fillRect(cx + car.width - 4, cy + 10, 4, 4);
+                ctx.fillRect(cx + car.width - 4, cy + 18, 4, 4);
+            } else {
+                ctx.fillStyle = '#DC143C';
+                ctx.fillRect(cx, cy + 10, 4, 4);
+                ctx.fillRect(cx, cy + 18, 4, 4);
+            }
+            
+            // Roof rack
+            ctx.fillStyle = '#696969';
+            ctx.fillRect(cx + 15, cy - 2, 3, 2);
+            ctx.fillRect(cx + car.width - 18, cy - 2, 3, 2);
+        }
+
+        // Draw detailed wheel
+        function drawWheel(x, y, size = 5) {
+            // Tire
+            ctx.fillStyle = '#2F2F2F';
+            ctx.beginPath();
+            ctx.arc(x + size, y + size, size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Rim
+            ctx.fillStyle = '#C0C0C0';
+            ctx.beginPath();
+            ctx.arc(x + size, y + size, size - 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Rim detail
+            ctx.fillStyle = '#808080';
+            ctx.beginPath();
+            ctx.arc(x + size, y + size, size - 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Spinning effect
+            const spin = Date.now() * 0.01;
+            ctx.strokeStyle = '#E0E0E0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 4; i++) {
+                const angle = spin + (i * Math.PI / 2);
+                ctx.beginPath();
+                ctx.moveTo(x + size, y + size);
+                ctx.lineTo(
+                    x + size + Math.cos(angle) * (size - 3),
+                    y + size + Math.sin(angle) * (size - 3)
+                );
+                ctx.stroke();
+            }
+        }
+
+        // Draw 1967 Shelby GT500
+        function drawShelby(cx, cy, car) {
+            // Classic muscle car body with gradient
+            const bodyGradient = ctx.createLinearGradient(cx, cy, cx, cy + car.height);
+            bodyGradient.addColorStop(0, '#4A90E2'); // Lighter blue
+            bodyGradient.addColorStop(0.5, car.color); // Main blue
+            bodyGradient.addColorStop(1, '#003366'); // Darker blue
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(cx, cy + 8, car.width, car.height - 8);
+            
+            // Long hood characteristic of muscle cars
+            ctx.fillRect(cx, cy + 12, car.width * 0.6, car.height - 12);
+            
+            // Short roof
+            ctx.fillRect(cx + car.width * 0.35, cy + 2, car.width * 0.4, 12);
+            
+            // Racing stripes - white
+            ctx.fillStyle = 'white';
+            ctx.fillRect(cx + car.width * 0.35, cy, 4, car.height);
+            ctx.fillRect(cx + car.width * 0.6, cy, 4, car.height);
+            
+            // Front air scoop
+            ctx.fillStyle = '#333';
+            ctx.fillRect(cx + car.width - 8, cy + 15, 6, 8);
+            
+            // Side exhausts
+            ctx.fillStyle = '#444';
+            if (car.direction === 1) {
+                ctx.fillRect(cx + car.width * 0.7, cy + car.height - 5, 8, 3);
+            } else {
+                ctx.fillRect(cx + car.width * 0.2, cy + car.height - 5, 8, 3);
+            }
+            
+            // Classic Shelby wheels - wider
+            drawWheel(cx + 8, cy + car.height - 8, 7);
+            drawWheel(cx + car.width - 20, cy + car.height - 8, 7);
+            
+            // Shelby badge
+            ctx.fillStyle = '#C0C0C0';
+            ctx.fillRect(cx + car.width/2 - 3, cy + 5, 6, 4);
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 6px Arial';
+            ctx.fillText('GT', cx + car.width/2 - 2, cy + 8);
+            
+            // Racing lights
+            if (car.direction === 1) {
+                ctx.fillStyle = '#FFFACD';
+                ctx.beginPath();
+                ctx.arc(cx + car.width - 3, cy + 10, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(cx + car.width - 3, cy + 20, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Draw classic purple Cadillac
+        function drawCadillac(cx, cy, car) {
+            // Luxurious body with gradient
+            const bodyGradient = ctx.createLinearGradient(cx, cy, cx, cy + car.height);
+            bodyGradient.addColorStop(0, '#9370DB'); // Medium slate blue
+            bodyGradient.addColorStop(0.5, car.color); // Purple
+            bodyGradient.addColorStop(1, '#4B0082'); // Indigo
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(cx, cy + 5, car.width, car.height - 5);
+            
+            // Long, elegant roof
+            ctx.fillRect(cx + 15, cy, car.width - 25, 10);
+            
+            // Chrome bumper
+            ctx.fillStyle = '#C0C0C0';
+            ctx.fillRect(cx, cy + car.height - 3, car.width, 3);
+            
+            // Tail fins (classic Cadillac feature)
+            if (car.direction === -1) {
+                ctx.fillStyle = bodyGradient;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy + 8);
+                ctx.lineTo(cx - 8, cy + 5);
+                ctx.lineTo(cx - 8, cy + 12);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(cx, cy + car.height - 8);
+                ctx.lineTo(cx - 8, cy + car.height - 5);
+                ctx.lineTo(cx - 8, cy + car.height - 12);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = bodyGradient;
+                ctx.beginPath();
+                ctx.moveTo(cx + car.width, cy + 8);
+                ctx.lineTo(cx + car.width + 8, cy + 5);
+                ctx.lineTo(cx + car.width + 8, cy + 12);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(cx + car.width, cy + car.height - 8);
+                ctx.lineTo(cx + car.width + 8, cy + car.height - 5);
+                ctx.lineTo(cx + car.width + 8, cy + car.height - 12);
+                ctx.fill();
+            }
+            
+            // Luxury windows
+            ctx.fillStyle = 'rgba(0,0,50,0.9)'; // Tinted windows
+            ctx.fillRect(cx + 18, cy + 2, 12, 8);
+            ctx.fillRect(cx + 35, cy + 2, 15, 8);
+            ctx.fillRect(cx + car.width - 30, cy + 2, 12, 8);
+            
+            // Chrome trim
+            ctx.fillStyle = '#E5E5E5';
+            ctx.fillRect(cx, cy + 15, car.width, 1);
+            ctx.fillRect(cx, cy + 25, car.width, 1);
+            
+            // Whitewall tires
+            drawWheel(cx + 12, cy + car.height - 8, 6);
+            drawWheel(cx + car.width - 22, cy + car.height - 8, 6);
+            
+            // Whitewall effect
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(cx + 18, cy + car.height - 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cx + car.width - 16, cy + car.height - 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cadillac emblem
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(cx + car.width/2 - 2, cy + 12, 4, 3);
+            
+            // Lights
+            if (car.direction === 1) {
+                ctx.fillStyle = '#FFFACD';
+                ctx.fillRect(cx + car.width - 5, cy + 8, 4, 3);
+                ctx.fillRect(cx + car.width - 5, cy + car.height - 11, 4, 3);
+            } else {
+                ctx.fillStyle = '#DC143C';
+                ctx.fillRect(cx + 1, cy + 8, 4, 3);
+                ctx.fillRect(cx + 1, cy + car.height - 11, 4, 3);
+            }
+        }
+
+        // Draw Cybertruck
+        function drawCybertruck(cx, cy, car) {
+            // Angular, futuristic body
+            ctx.fillStyle = car.color; // Steel/silver
+            
+            // Main body - angular design
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + car.height);
+            ctx.lineTo(cx, cy + 15);
+            ctx.lineTo(cx + 20, cy + 5);
+            ctx.lineTo(cx + car.width - 15, cy + 5);
+            ctx.lineTo(cx + car.width, cy + 12);
+            ctx.lineTo(cx + car.width, cy + car.height);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Angular windshield
+            ctx.fillStyle = 'rgba(0,0,100,0.8)';
+            ctx.beginPath();
+            ctx.moveTo(cx + 25, cy + 6);
+            ctx.lineTo(cx + 40, cy + 6);
+            ctx.lineTo(cx + 35, cy + 15);
+            ctx.lineTo(cx + 30, cy + 15);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Side panels with metallic gradient
+            const metalGradient = ctx.createLinearGradient(cx, cy + 10, cx, cy + car.height);
+            metalGradient.addColorStop(0, '#E5E5E5');
+            metalGradient.addColorStop(0.5, car.color);
+            metalGradient.addColorStop(1, '#808080');
+            ctx.fillStyle = metalGradient;
+            ctx.fillRect(cx + 5, cy + 12, car.width - 10, car.height - 12);
+            
+            // LED light bar
+            if (car.direction === 1) {
+                ctx.fillStyle = '#00FFFF'; // Cyan LED
+                ctx.fillRect(cx + car.width - 3, cy + 10, 2, 15);
+            } else {
+                ctx.fillStyle = '#FF0000'; // Red LED
+                ctx.fillRect(cx + 1, cy + 10, 2, 15);
+            }
+            
+            // Cybertruck wheels - more futuristic
+            ctx.fillStyle = '#2F2F2F';
+            ctx.beginPath();
+            ctx.arc(cx + 15, cy + car.height - 3, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cx + car.width - 20, cy + car.height - 3, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Wheel rims - angular design
+            ctx.fillStyle = '#C0C0C0';
+            ctx.fillRect(cx + 12, cy + car.height - 6, 6, 6);
+            ctx.fillRect(cx + car.width - 23, cy + car.height - 6, 6, 6);
+            
+            // Tesla logo area
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(cx + car.width/2 - 2, cy + 18, 4, 2);
+        }
+
+        // Color helper functions
+        function shadeColor(color, percent) {
+            const num = parseInt(color.replace("#",""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + 
+                         (G<255?G<1?0:G:255)*0x100 + 
+                         (B<255?B<1?0:B:255)).toString(16).slice(1);
+        }
+
+        function addAlpha(color, alpha) {
+            const r = parseInt(color.substr(1,2), 16);
+            const g = parseInt(color.substr(3,2), 16);
+            const b = parseInt(color.substr(5,2), 16);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+        
+        // Interpolate between two colors
+        function interpolateColor(color1, color2, factor) {
+            const r1 = parseInt(color1.substr(1,2), 16);
+            const g1 = parseInt(color1.substr(3,2), 16);
+            const b1 = parseInt(color1.substr(5,2), 16);
+            
+            const r2 = parseInt(color2.substr(1,2), 16);
+            const g2 = parseInt(color2.substr(3,2), 16);
+            const b2 = parseInt(color2.substr(5,2), 16);
+            
+            const r = Math.round(r1 + (r2 - r1) * factor);
+            const g = Math.round(g1 + (g2 - g1) * factor);
+            const b = Math.round(b1 + (b2 - b1) * factor);
+            
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            gameState = 'outro';
+            gameOverElement.style.display = 'none'; // Hide old game over screen
+            
+            // Show mobile restart button on mobile devices
+            const mobileRestartBtn = document.getElementById('mobileRestart');
+            if (window.matchMedia("(max-width: 768px)").matches || window.matchMedia("(pointer: coarse)").matches) {
+                mobileRestartBtn.classList.add('show');
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            gameState = 'playing';
+            // Hide HTML intro screen
+            document.getElementById('introScreen').style.display = 'none';
+            // Reset player position for fresh start
+            player.x = 400;
+            player.y = 550;
+            // Clear any existing floozies from intro
+            floozies.length = 0;
+            powerUps.length = 0;
+        }
+
+        // Restart game
+        function restartGame() {
+            gameState = 'playing';
+            gameRunning = true;
+            gameOverElement.style.display = 'none';
+            
+            // Hide all possible screen overlays
+            const outroScreen = document.getElementById('outroScreen');
+            if (outroScreen) outroScreen.style.display = 'none';
+            
+            const mobileRestart = document.getElementById('mobileRestart');
+            if (mobileRestart) mobileRestart.classList.remove('show');
+            
+            // Reset game state completely
+            player.x = 400;
+            player.y = 550;
+            player.invulnerable = false;
+            cars.length = 0;
+            fallenWigs.length = 0;
+            fallenShoes.length = 0;
+            powerUps.length = 0;
+            floozies.length = 0;
+            bossFloozy = null;
+            bossItems.length = 0;
+            score = 0;
+            level = 1; // Always restart at level 1
+            playerLives = 3;
+            hasWig = true;
+            hasShoes = true;
+            powerUpActive = false;
+            powerUpTimer = 0;
+            nailArmorActive = false;
+            nailArmorTimer = 0;
+            player.speed = player.baseSpeed;
+            powerUpStatus.style.display = 'none';
+            nailArmorStatus.style.display = 'none';
+            currentWigColor = getWigColor(); // Reset for restart
+            updateScore();
+            
+            // Clean up any messages
+            const hitMsg = document.getElementById('hitMessage');
+            if (hitMsg) hitMsg.remove();
+        }
+
+        // Draw intro screen overlay
+        function drawIntroScreen() {
+            // Semi-transparent black overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw title image centered if loaded
+            if (titleImageLoaded) {
+                try {
+                    const maxWidth = Math.min(600, canvas.width * 0.75);
+                    const maxHeight = 400;
+                    
+                    // Calculate dimensions maintaining aspect ratio
+                    let imgWidth = titleImage.width;
+                    let imgHeight = titleImage.height;
+                    
+                    if (imgWidth > maxWidth) {
+                        imgHeight = (imgHeight * maxWidth) / imgWidth;
+                        imgWidth = maxWidth;
+                    }
+                    
+                    if (imgHeight > maxHeight) {
+                        imgWidth = (imgWidth * maxHeight) / imgHeight;
+                        imgHeight = maxHeight;
+                    }
+                    
+                    // Center the image
+                    const imgX = (canvas.width - imgWidth) / 2;
+                    const imgY = (canvas.height - imgHeight) / 2 - 50;
+                    
+                    // Image shadow
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+                    ctx.shadowOffsetY = 8;
+                    
+                    // Draw image with golden border
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(imgX - 8, imgY - 8, imgWidth + 16, imgHeight + 16);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(imgX - 4, imgY - 4, imgWidth + 8, imgHeight + 8);
+                    
+                    ctx.drawImage(titleImage, imgX, imgY, imgWidth, imgHeight);
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+                } catch (error) {
+                    console.log('Error drawing title image:', error);
+                }
+            }
+            
+            // Pulsing start text at bottom
+            const alpha = (Math.sin(Date.now() * 0.005) + 1) / 2;
+            ctx.fillStyle = `rgba(255, 215, 0, ${0.8 + alpha * 0.2})`;
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            ctx.strokeText('Press SPACE to start!', canvas.width/2, canvas.height - 50);
+            ctx.fillText('Press SPACE to start!', canvas.width/2, canvas.height - 50);
+            
+            // Reset text alignment
+            ctx.textAlign = 'left';
+        }
+        
+        // Draw victory screen
+        function drawVictoryScreen() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Golden gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#FFD700');
+            gradient.addColorStop(0.5, '#FFA500');
+            gradient.addColorStop(1, '#FF69B4');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Confetti animation
+            const time = Date.now() * 0.002;
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 73) % canvas.width;
+                const y = ((time * 50 + i * 37) % canvas.height);
+                ctx.fillStyle = ['#FF69B4', '#FFD700', '#FF1493', '#00CED1'][i % 4];
+                ctx.fillRect(x, y, 8, 8);
+            }
+            
+            // Victory message
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.strokeText('VICTORY! 🏆', canvas.width/2, 150);
+            ctx.fillText('VICTORY! 🏆', canvas.width/2, 150);
+            
+            ctx.font = 'bold 32px Arial';
+            ctx.fillStyle = '#000';
+            ctx.fillText('You defeated Queen Floozy!', canvas.width/2, 220);
+            
+            ctx.font = '24px Arial';
+            ctx.fillText('DeTravius is yours! 💕', canvas.width/2, 280);
+            ctx.fillText('Time to go home together!', canvas.width/2, 320);
+            
+            ctx.font = '20px Arial';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText('Your wig stayed on, your heels stayed high,', canvas.width/2, 380);
+            ctx.fillText('and you kept it cute on the ATL streets!', canvas.width/2, 410);
+            
+            // Final score
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 36px Arial';
+            ctx.strokeText(`Final Score: ${score}`, canvas.width/2, 480);
+            ctx.fillText(`Final Score: ${score}`, canvas.width/2, 480);
+            
+            // Restart prompt
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.strokeText('Press R to play again', canvas.width/2, 540);
+            ctx.fillText('Press R to play again', canvas.width/2, 540);
+            
+            // Reset text alignment
+            ctx.textAlign = 'left';
+        }
+        
+        // Draw outro screen
+        function drawOutroScreen() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dark background gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#800080');
+            gradient.addColorStop(0.5, '#4B0082');
+            gradient.addColorStop(1, '#000000');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Broken heart animation
+            const heartY = 100 + Math.sin(Date.now() * 0.003) * 10;
+            ctx.fillStyle = '#FF6B6B';
+            ctx.font = '48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('💔', canvas.width/2, heartY);
+            
+            // Title
+            ctx.fillStyle = '#FF6B6B';
+            ctx.font = 'bold 42px Arial';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.strokeText('GAME OVER', canvas.width/2, 200);
+            ctx.fillText('GAME OVER', canvas.width/2, 200);
+            
+            // Story text
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.fillText('While you were stuck in Atlanta traffic...', canvas.width/2, 280);
+            ctx.fillText('DeTravius packed his bags and left', canvas.width/2, 320);
+            ctx.fillText('with some other floozy! 💅', canvas.width/2, 360);
+            
+            // Moral
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'italic 18px Arial';
+            ctx.fillText('Next time, keep your look together', canvas.width/2, 420);
+            ctx.fillText('on these ATL streets!', canvas.width/2, 450);
+            
+            // Restart prompt
+            const alpha = (Math.sin(Date.now() * 0.005) + 1) / 2;
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.font = 'bold 24px Arial';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.strokeText('Press R to try to win him back', canvas.width/2, 520);
+            ctx.fillText('Press R to try to win him back', canvas.width/2, 520);
+            
+            // Reset text alignment
+            ctx.textAlign = 'left';
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning && gameState !== 'intro') return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Always draw the game world
+            drawRoad();
+            drawFallenShoes();
+            drawWigs();
+            drawBossItems();
+            drawPowerUps();
+            drawFloozies();
+            drawBossFloozy();
+            
+            drawCars();
+            
+            // Only draw player if not in intro (draw after cars so player appears on top)
+            if (gameState !== 'intro') {
+                drawPlayer();
+            }
+
+            // Keep updating game elements
+            spawnCar();
+            updateCars();
+            
+            if (gameState === 'playing') {
+                spawnPowerUp();
+                updatePowerUps();
+                spawnFloozy();
+                updateFloozies();
+                updateBossFloozy();
+
+                if (!player.invulnerable) {
+                    checkCollision();
+                }
+
+                checkWin();
+            }
+            
+            // Draw overlays on top
+            if (gameState === 'intro') {
+                drawIntroScreen();
+            } else if (gameState === 'outro') {
+                drawOutroScreen();
+            } else if (gameState === 'victory') {
+                drawVictoryScreen();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Optimized mobile touch controls with immediate response
+        function setupMobileControls() {
+            const dpadButtons = document.querySelectorAll('.dpad-button');
+            
+            dpadButtons.forEach(button => {
+                // Use touchstart for immediate response (no delay)
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const direction = button.getAttribute('data-direction');
+                    
+                    // Immediate movement - no waiting for next frame
+                    handleMovementImmediate(direction);
+                    
+                    // Visual feedback
+                    button.style.transform = 'scale(0.9)';
+                    button.style.background = 'rgba(255, 255, 255, 1)';
+                }, { passive: false });
+                
+                button.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Reset visual feedback
+                    button.style.transform = 'scale(1)';
+                    button.style.background = 'rgba(255, 255, 255, 0.8)';
+                }, { passive: false });
+                
+                // Handle mouse events for testing on desktop
+                button.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const direction = button.getAttribute('data-direction');
+                    handleMovementImmediate(direction);
+                    
+                    button.style.transform = 'scale(0.9)';
+                    button.style.background = 'rgba(255, 255, 255, 1)';
+                });
+                
+                button.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    button.style.transform = 'scale(1)';
+                    button.style.background = 'rgba(255, 255, 255, 0.8)';
+                });
+                
+                // Prevent all other events that might cause delays
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                
+                button.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+        }
+        
+        // Immediate movement function for zero-delay response
+        function handleMovementImmediate(direction) {
+            if (gameState === 'intro' && direction === 'up') {
+                startGame();
+                return;
+            }
+            
+            if ((gameState === 'outro' || gameState === 'victory' || !gameRunning) && direction === 'up') {
+                restartGame();
+                return;
+            }
+
+            if (gameState !== 'playing' || !gameRunning) return;
+
+            let newX = player.x;
+            let newY = player.y;
+
+            // Check if player is currently in a pothole for slower movement
+            const currentSpeed = isInPothole(player.x, player.y) ? player.speed * 0.3 : player.speed;
+            
+            switch(direction) {
+                case 'up':
+                    newY = Math.max(0, player.y - currentSpeed);
+                    if (canMoveTo(player.x, newY)) {
+                        player.y = newY;
+                        player.direction = 'up';
+                        if (isInPothole(player.x, player.y) && !isInPothole(player.x, player.y + currentSpeed)) {
+                            showPotholeEffect();
+                        }
+                    }
+                    break;
+                case 'down':
+                    newY = Math.min(canvas.height - player.height, player.y + currentSpeed);
+                    if (canMoveTo(player.x, newY)) {
+                        player.y = newY;
+                        player.direction = 'down';
+                        if (isInPothole(player.x, player.y) && !isInPothole(player.x, player.y - currentSpeed)) {
+                            showPotholeEffect();
+                        }
+                    }
+                    break;
+                case 'left':
+                    newX = Math.max(0, player.x - currentSpeed);
+                    if (canMoveTo(newX, player.y)) {
+                        player.x = newX;
+                        player.direction = 'left';
+                        if (isInPothole(player.x, player.y) && !isInPothole(player.x + currentSpeed, player.y)) {
+                            showPotholeEffect();
+                        }
+                    }
+                    break;
+                case 'right':
+                    newX = Math.min(canvas.width - player.width, player.x + currentSpeed);
+                    if (canMoveTo(newX, player.y)) {
+                        player.x = newX;
+                        player.direction = 'right';
+                        if (isInPothole(player.x, player.y) && !isInPothole(player.x - currentSpeed, player.y)) {
+                            showPotholeEffect();
+                        }
+                    }
+                    break;
+            }
+            
+            // Force immediate visual update
+            drawQuickUpdate();
+        }
+
+        // Legacy movement function (kept for keyboard controls)
+        function handleMovement(direction) {
+            handleMovementImmediate(direction);
+        }
+        
+        // Quick visual update for immediate feedback
+        function drawQuickUpdate() {
+            // Only redraw the player area for performance
+            const px = player.x;
+            const py = player.y;
+            
+            // Clear just the player area
+            ctx.clearRect(px - 10, py - 10, player.width + 20, player.height + 20);
+            
+            // Redraw background in that area
+            const roadGradient = ctx.createLinearGradient(0, 100, 0, 550);
+            roadGradient.addColorStop(0, '#555');
+            roadGradient.addColorStop(1, '#333');
+            ctx.fillStyle = roadGradient;
+            ctx.fillRect(px - 10, py - 10, player.width + 20, player.height + 20);
+            
+            // Redraw player
+            drawPlayer();
+        }
+
+        // Canvas tap detection for intro/restart (only on canvas, not D-pad area)
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            // Only handle taps on canvas for intro/restart, not movement
+            if (gameState === 'intro') {
+                startGame();
+            } else if (gameState === 'outro' || gameState === 'victory' || !gameRunning) {
+                restartGame();
+                gameLoop();
+            }
+        });
+
+        // Initialize mobile controls
+        setupMobileControls();
+        
+        // Mobile restart button
+        document.getElementById('mobileRestart').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            restartGame();
+            gameLoop();
+        });
+        
+        document.getElementById('mobileRestart').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            restartGame();
+            gameLoop();
+        });
+
+        // Optimized keyboard controls with immediate response
+        document.addEventListener('keydown', (e) => {
+            if (gameState === 'intro' && e.key === ' ') {
+                startGame();
+                return;
+            }
+            
+            if ((gameState === 'outro' || gameState === 'victory' || !gameRunning) && e.key.toLowerCase() === 'r') {
+                restartGame();
+                gameLoop();
+                return;
+            }
+
+            if (gameState !== 'playing' || !gameRunning) return;
+
+            // Use immediate movement for keyboard too
+            switch(e.key.toLowerCase()) {
+                case 'w':
+                case 'arrowup':
+                    handleMovementImmediate('up');
+                    break;
+                case 's':
+                case 'arrowdown':
+                    handleMovementImmediate('down');
+                    break;
+                case 'a':
+                case 'arrowleft':
+                    handleMovementImmediate('left');
+                    break;
+                case 'd':
+                case 'arrowright':
+                    handleMovementImmediate('right');
+                    break;
+            }
+        });
+
+        // Enhanced fullscreen functionality for mobile
+        let isFullscreen = false;
+        let isMobileFullscreen = false;
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                // Try mobile-optimized fullscreen first
+                if (window.innerWidth <= 768) {
+                    enterMobileFullscreen();
+                } else {
+                    // Desktop fullscreen
+                    enterDesktopFullscreen();
+                }
+            } else {
+                exitFullscreen();
+            }
+        }
+        
+        function enterMobileFullscreen() {
+            // Mobile fullscreen - focus on maximizing viewport
+            isMobileFullscreen = true;
+            isFullscreen = true;
+            
+            // Hide address bar by scrolling
+            window.scrollTo(0, 1);
+            
+            // Add fullscreen class
+            document.body.classList.add('fullscreen-mode');
+            document.documentElement.classList.add('fullscreen-mode');
+            
+            // Update button
+            fullscreenBtn.textContent = '↙ EXIT FULLSCREEN';
+            
+            // Try native fullscreen as backup (may not work on all mobile browsers)
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+                element.requestFullscreen().catch(() => {
+                    // Fullscreen failed - that's OK, we have our CSS fallback
+                });
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen().catch(() => {});
+            }
+            
+            // Force layout recalculation
+            setTimeout(() => {
+                resizeCanvas();
+                // Hide address bar again after a delay
+                window.scrollTo(0, 1);
+            }, 100);
+        }
+        
+        function enterDesktopFullscreen() {
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+            
+            document.body.classList.add('fullscreen-mode');
+            fullscreenBtn.textContent = '↙ EXIT FULLSCREEN';
+            isFullscreen = true;
+        }
+        
+        function exitFullscreen() {
+            if (isMobileFullscreen) {
+                // Exit mobile fullscreen
+                isMobileFullscreen = false;
+                document.body.classList.remove('fullscreen-mode');
+                document.documentElement.classList.remove('fullscreen-mode');
+            }
+            
+            // Try to exit native fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            
+            fullscreenBtn.textContent = '⛶ FULLSCREEN';
+            isFullscreen = false;
+            
+            setTimeout(resizeCanvas, 100);
+        }
+        
+        // Listen for fullscreen changes (including hardware back button)
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        function handleFullscreenChange() {
+            const isCurrentlyFullscreen = !!(document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement || 
+                document.msFullscreenElement);
+                
+            if (!isCurrentlyFullscreen && isFullscreen) {
+                // User exited fullscreen (e.g., with hardware back button)
+                document.body.classList.remove('fullscreen-mode');
+                fullscreenBtn.textContent = '⛶ FULLSCREEN';
+                isFullscreen = false;
+                setTimeout(resizeCanvas, 100);
+            }
+        }
+        
+        // Fullscreen button event listener
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        fullscreenBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleFullscreen();
+        });
+
+        // Responsive canvas sizing with mobile fullscreen optimization
+        function resizeCanvas() {
+            const isLandscape = window.innerHeight < window.innerWidth;
+            const isMobile = window.innerWidth <= 768;
+            const isInFullscreen = document.body.classList.contains('fullscreen-mode');
+            
+            let maxWidth, maxHeight;
+            
+            if (isInFullscreen && isMobile) {
+                // Mobile fullscreen - use every pixel available
+                maxWidth = window.screen.width || window.innerWidth;
+                maxHeight = window.screen.height || window.innerHeight;
+                
+                // Try to use the actual screen dimensions if available
+                if (window.screen && window.screen.availWidth) {
+                    maxWidth = window.screen.availWidth;
+                    maxHeight = window.screen.availHeight;
+                }
+            } else if (isInFullscreen) {
+                // Desktop fullscreen
+                maxWidth = window.innerWidth;
+                maxHeight = window.innerHeight;
+            } else if (isMobile && isLandscape) {
+                // Landscape mobile - maximize game area
+                maxWidth = window.innerWidth - 10;
+                maxHeight = window.innerHeight - 80;
+            } else if (isMobile) {
+                // Portrait mobile
+                maxWidth = window.innerWidth - 20;
+                maxHeight = window.innerHeight - 200;
+            } else {
+                // Desktop
+                maxWidth = window.innerWidth - 40;
+                maxHeight = window.innerHeight - 250;
+            }
+            
+            const gameAspectRatio = 800 / 600; // Original canvas ratio
+            
+            let newWidth, newHeight;
+            
+            if (maxWidth / maxHeight > gameAspectRatio) {
+                // Window is wider than game aspect ratio
+                newHeight = Math.min(maxHeight, isInFullscreen ? maxHeight : 600);
+                newWidth = newHeight * gameAspectRatio;
+            } else {
+                // Window is taller than game aspect ratio
+                newWidth = Math.min(maxWidth, isInFullscreen ? maxWidth : 800);
+                newHeight = newWidth / gameAspectRatio;
+            }
+            
+            // Set canvas display size
+            canvas.style.width = newWidth + 'px';
+            canvas.style.height = newHeight + 'px';
+            
+            // Keep internal resolution the same for consistent gameplay
+            canvas.width = 800;
+            canvas.height = 600;
+            
+            // Force repaint if in mobile fullscreen
+            if (isInFullscreen && isMobile) {
+                canvas.style.transform = 'translateZ(0)';
+                setTimeout(() => {
+                    canvas.style.transform = '';
+                }, 50);
+            }
+        }
+        
+        // Initial resize and setup resize listener
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                // Hide address bar again after orientation change
+                if (isMobileFullscreen) {
+                    window.scrollTo(0, 1);
+                }
+                resizeCanvas();
+            }, 100);
+        });
+        
+        // Mobile-specific viewport handling
+        if (window.innerWidth <= 768) {
+            // Listen for virtual keyboard showing/hiding
+            window.addEventListener('resize', () => {
+                if (isMobileFullscreen) {
+                    setTimeout(() => {
+                        window.scrollTo(0, 1);
+                        resizeCanvas();
+                    }, 50);
+                }
+            });
+            
+            // Prevent zoom on double-tap
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        }
+
+        // Initialize the game
+        updateScore();
+        gameLoop();
+        
+        // Hide HTML intro screen - we use canvas-based intro instead
+        document.getElementById('introScreen').style.display = 'none';
+    </script>
+</body>
+</html>
